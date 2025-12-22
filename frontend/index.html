@@ -1179,7 +1179,7 @@
         async function init() {
             // SaaS Initialization
             await Storage.init();
-            setupAuthUI();
+            await setupAuthUI();
 
             initThree();
             setupEnvironment();
@@ -1201,7 +1201,7 @@
         }
 
         // --- SaaS Logic ---
-        function setupAuthUI() {
+        async function setupAuthUI() {
             const btnLogin = document.getElementById('btn-login');
             const btnPay = document.getElementById('btn-pay');
             const confirmPay = document.getElementById('confirm-pay');
@@ -1323,19 +1323,19 @@
                 // Clean URL
                 window.history.replaceState({}, document.title, "/");
 
-                // Retrieve user info (mocking the full object or fetching it)
-                // For now, simpler to just "trust" the openid or fetch fresh
-                API.getUser(openid).then(res => {
+                // Retrieve user info (awaiting this to ensure currentUser is set)
+                try {
+                    const res = await API.getUser(openid);
                     if (res.success) {
                         handleLoginSuccess(res.user);
                     } else {
-                        alert("登录成功但获取用户信息失败:\n" + JSON.stringify(res));
+                        showCustomModal('⚠️', '获取信息失败', JSON.stringify(res));
                         console.error("User fetch success=false", res);
                     }
-                }).catch(e => {
+                } catch (e) {
                     console.error("Failed to load user after callback", e);
-                    alert("登录回调处理失败: API Error - " + e.message);
-                });
+                    showCustomModal('⚠️', '登录异常', "API Error - " + e.message);
+                }
             }
 
             // Pay Handler

@@ -1287,7 +1287,10 @@
                             if (isPaid) clearInterval(pollInterval);
                         }, 3000);
                     } else {
-                        alert("订单创建失败: " + (orderRes.error || JSON.stringify(orderRes)));
+                        // Force full details display
+                        const errorDetails = orderRes.details ? JSON.stringify(orderRes.details, null, 2) : (orderRes.error || "Unknown Error");
+                        alert("订单创建失败 (JSON):\n" + errorDetails);
+                        console.error("Full Order Res:", orderRes);
                         confirmPay.innerText = "重试";
                     }
                 };

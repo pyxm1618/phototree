@@ -251,13 +251,13 @@ app.post('/api/pay/create-order', async (req, res) => {
     } catch (error) {
         // Capture WeChat API Error Details
         const wxError = error.response?.data;
-        console.error("Payment Creation Exception:", wxError || error.message);
+        console.error("Payment Creation Exception:", JSON.stringify(wxError || error.message));
 
         // Return 200 so frontend alert stringifies the details
         res.json({
             success: false,
-            error: error.message,
-            details: wxError || "No details"
+            error: `Payment Failed (${error.response?.status || 500}): ${error.message}`,
+            details: wxError || error.response?.statusText || "No details"
         });
     }
 });

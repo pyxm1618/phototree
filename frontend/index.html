@@ -2339,7 +2339,24 @@
                         document.getElementById('webcam-wrapper').style.display = 'block';
                     } catch (err2) {
                         console.error("All webcam attempts failed", err2);
-                        debugInfo.innerText = "Camera not found. Click to retry.";
+                        debugInfo.innerText = "Camera not found. Click '开启摄像头' to retry.";
+
+                        // Diagnostic: Check available devices
+                        try {
+                            const devices = await navigator.mediaDevices.enumerateDevices();
+                            const videoInputs = devices.filter(d => d.kind === 'videoinput');
+                            console.log("Device Enumeration Check:",
+                                videoInputs.length > 0 ? `Found ${videoInputs.length} cameras` : "NO CAMERAS FOUND",
+                                devices
+                            );
+                            if (videoInputs.length === 0) {
+                                alert("系统检测不到任何摄像头设备！请检查电脑/手机是否有摄像头，或是否在系统设置中禁用了浏览器的摄像头权限。");
+                            }
+                        } catch (enumErr) {
+                            console.error("Enumeration failed:", enumErr);
+                        }
+
+                        // Create Retry Button
 
                         // Create Retry Button
                         const retryBtn = document.createElement('button');

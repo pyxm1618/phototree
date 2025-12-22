@@ -1,3 +1,12 @@
-const { sql } = require('@vercel/postgres');
+const { Pool } = require('pg');
 
-module.exports = { sql };
+// Use DATABASE_URL which is set by Prisma Postgres
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
+
+module.exports = {
+    query: (text, params) => pool.query(text, params),
+    pool
+};

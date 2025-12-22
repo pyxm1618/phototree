@@ -126,10 +126,10 @@ app.get('/api/callback/wechat', async (req, res) => {
 
 async function ensureUserExists(openid) {
     try {
-        const result = await db.sql`SELECT * FROM users WHERE openid = ${openid}`;
+        const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
         if (!result.rows[0]) {
             console.log(`[DB] Creating new user: ${openid}`);
-            await db.sql`INSERT INTO users (openid) VALUES (${openid})`;
+            await db.query("INSERT INTO users (openid) VALUES ($1)", [openid]);
         }
     } catch (err) {
         console.error('[DB] User Ensure Error:', err);
@@ -138,7 +138,7 @@ async function ensureUserExists(openid) {
 
 async function handleUserLogin(openid, res) {
     try {
-        const result = await db.sql`SELECT * FROM users WHERE openid = ${openid}`;
+        const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
         const row = result.rows[0];
 
         if (row) {
@@ -146,7 +146,7 @@ async function handleUserLogin(openid, res) {
             res.json({ success: true, user: row });
         } else {
             console.log(`[Login] Creating new user: ${openid}`);
-            const insertResult = await db.sql`INSERT INTO users (openid) VALUES (${openid}) RETURNING *`;
+            const insertResult = await db.query("INSERT INTO users (openid) VALUES ($1) RETURNING *", [openid]);
             const newUser = insertResult.rows[0];
             res.json({ success: true, user: newUser });
         }
@@ -325,7 +325,7 @@ app.post('/api/pay/notify', async (req, res) => {
         if (tradeState === 'SUCCESS' && openid) {
             const expireTime = 4102444800000; // Year 2100
             try {
-                await db.sql`UPDATE users SET is_vip = 1, vip_expire_time = ${expireTime} WHERE openid = ${openid}`;
+                await db.query("UPDATE users SET is_vip = 1, vip_expire_time = $1 WHERE openid = $2", [expireTime, openid]);
                 console.log(`[Pay] ✅ User ${openid} upgraded to Premium via callback`);
             } catch (err) {
                 console.error("[Pay] Failed to update VIP:", err);
@@ -355,7 +355,7 @@ app.post('/api/dev/force-vip', async (req, res) => {
     console.log(`[Emergency] Manually upgrading ${openid} to VIP`);
 
     try {
-        await db.sql`UPDATE users SET is_vip = 1, vip_expire_time = ${expireTime} WHERE openid = ${openid}`;
+        await db.query("UPDATE users SET is_vip = 1, vip_expire_time = $1 WHERE openid = $2", [expireTime, openid]);
         console.log(`[Emergency] ✅ User ${openid} upgraded to Premium`);
         res.json({ success: true, message: "User is now Premium" });
     } catch (err) {
@@ -370,7 +370,7 @@ app.post('/api/dev/force-vip', async (req, res) => {
 app.get('/api/user/:openid', async (req, res) => {
     const { openid } = req.params;
     try {
-        const result = await db.sql`SELECT * FROM users WHERE openid = ${openid}`;
+        const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
         const row = result.rows[0];
         if (!row) return res.status(404).json({ error: "User not found" });
         res.json({ success: true, user: row });
@@ -393,7 +393,7 @@ app.get('/api/dev/check-env', (req, res) => {
 // [DEBUG] Manual DB Init Route
 app.get('/api/dev/init-db', async (req, res) => {
     try {
-        await db.sql`
+        await db.query(`
           CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             openid TEXT UNIQUE NOT NULL,
@@ -401,7 +401,7 @@ app.get('/api/dev/init-db', async (req, res) => {
             vip_expire_time BIGINT DEFAULT 0,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           );
-        `;
+        `);
         res.send("Database initialized successfully! Table 'users' should exist now.");
     } catch (err) {
         console.error("Init DB Error:", err);

@@ -742,8 +742,10 @@
 
         <button id="btn-login" class="btn-login">微信登录</button>
         <!-- WeChat Login QR Container -->
-        <div id="wx-login-container" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; z-index:200; border-radius:10px; box-shadow:0 0 20px rgba(0,0,0,0.5);">
-            <div style="text-align:right; cursor:pointer; color:black; margin-bottom:10px;" onclick="document.getElementById('wx-login-container').style.display='none'">✖</div>
+        <div id="wx-login-container"
+            style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; z-index:200; border-radius:10px; box-shadow:0 0 20px rgba(0,0,0,0.5);">
+            <div style="text-align:right; cursor:pointer; color:black; margin-bottom:10px;"
+                onclick="document.getElementById('wx-login-container').style.display='none'">✖</div>
             <div id="login_container"></div>
         </div>
 
@@ -1190,7 +1192,7 @@
                         // Need to clear previous iframe if any
                         const inner = document.getElementById('login_container');
                         inner.innerHTML = '';
-                        
+
                         new WxLogin({
                             self_redirect: false,
                             id: "login_container",
@@ -1204,20 +1206,36 @@
                     }
                 };
             }
-            
+
             // Check for Login Callback (URL Params)
             const urlParams = new URLSearchParams(window.location.search);
+            // Check for Login Errors (URL Params)
+            if (urlParams.get('error')) {
+                const errType = urlParams.get('error');
+                const errMsg = urlParams.get('msg') || 'Unknown error';
+                alert(`登录失败: ${errType}\n详细信息: ${errMsg}\n请检查控制台或联系管理员(Env Var mismatch?)`);
+                // Clear URL but keep error visible in alert
+                window.history.replaceState({}, document.title, "/");
+            }
+
+            // Check for Login Callback (URL Params)
             if (urlParams.get('login_success') === 'true' && urlParams.get('openid')) {
                 const openid = urlParams.get('openid');
                 // Clean URL
                 window.history.replaceState({}, document.title, "/");
-                
+
                 // Retrieve user info (mocking the full object or fetching it)
                 // For now, simpler to just "trust" the openid or fetch fresh
                 API.getUser(openid).then(res => {
-                    if (res.success) handleLoginSuccess(res.user);
+                    if (res.success) {
+                        handleLoginSuccess(res.user);
+                    } else {
+                        alert("登录成功但获取用户信息失败，请查看控制台日志。");
+                        console.error("User fetch success=false", res);
+                    }
                 }).catch(e => {
                     console.error("Failed to load user after callback", e);
+                    alert("登录回调处理失败: API Error - " + e.message);
                 });
             }
 

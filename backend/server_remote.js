@@ -10,6 +10,9 @@ const PORT = 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
+app.use(cors());
+app.use(bodyParser.json());
+
 // Serve Static Frontend (Clean Structure: Backend serves sibling Frontend)
 app.use(express.static(path.join(__dirname, '../frontend')));
 
@@ -20,7 +23,6 @@ const axios = require('axios');
 // Load Env Vars
 const {
     WECHAT_APP_ID,
-    WECHAT_APP_SECRET, // Add Secret
     WECHAT_MCH_ID,
     WECHAT_API_V3_KEY,
     WECHAT_CERT_SERIAL_NO,
@@ -77,11 +79,12 @@ app.post('/api/login', async (req, res) => {
     try {
         // Real WeChat Login
         const APP_ID = process.env.WECHAT_APP_ID;
+        // 优先使用环境变量中的 Secret，如果未设置则使用 fallback (虽然 fallback 可能是错的，但加上以防万一)
         const APP_SECRET = process.env.WECHAT_APP_SECRET;
 
-        if (!APP_ID || !APP_SECRET) {
-            console.error('[Login] WECHAT_APP_ID or WECHAT_APP_SECRET is not set in env!');
-            return res.status(500).json({ error: 'Server Config Error: Missing App ID or Secret' });
+        if (!APP_SECRET) {
+            console.error('[Login] WECHAT_APP_SECRET is not set in env!');
+            return res.status(500).json({ error: 'Server Config Error: Missing App Secret' });
         }
 
         const url = `https://api.weixin.qq.com/sns/jscode2session?appid=${APP_ID}&secret=${APP_SECRET}&js_code=${code}&grant_type=authorization_code`;
@@ -97,7 +100,7 @@ app.post('/api/login', async (req, res) => {
         const openid = data.openid;
         console.log(`[Login] Authenticated OpenID: ${openid}`);
 
-        await handleUserLogin(openid, res);
+        handleUserLogin(openid, res);
 
     } catch (error) {
         console.error('[Login] System Error:', error);
@@ -105,23 +108,25 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-async function handleUserLogin(openid, res) {
-    try {
-        const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
-        const row = result.rows[0];
-
+function handleUserLogin(openid, res) {
+    db.get("SELECT * FROM users WHERE openid = ?", [openid], (err, row) => {
+        if (err) {
+            console.error('[DB] Select Error:', err);
+            return res.status(500).json({ error: err.message });
+        }
         if (row) {
             res.json({ success: true, user: row });
         } else {
             console.log(`[Login] Creating new user: ${openid}`);
-            const insertResult = await db.query("INSERT INTO users (openid) VALUES ($1) RETURNING *", [openid]);
-            const newUser = insertResult.rows[0];
-            res.json({ success: true, user: newUser });
+            db.run("INSERT INTO users (openid) VALUES (?)", [openid], function (err) {
+                if (err) {
+                    console.error('[DB] Insert Error:', err);
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json({ success: true, user: { id: this.lastID, openid: openid, is_vip: 0 } });
+            });
         }
-    } catch (err) {
-        console.error('[DB] Login Error:', err);
-        res.status(500).json({ error: err.message });
-    }
+    });
 }
 
 /**
@@ -140,8 +145,8 @@ app.post('/api/pay/create-order', async (req, res) => {
         });
     }
 
-    // Real Payment Mode - 使用 PT 前缀便于 Mirauni 网关识别
-    const outTradeNo = `PT_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    // Real Payment Mode
+    const outTradeNo = `ord_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const description = "Premium Product - Lifetime Access";
 
     try {
@@ -152,12 +157,12 @@ app.post('/api/pay/create-order', async (req, res) => {
             mchid: WECHAT_MCH_ID,
             description: description,
             out_trade_no: outTradeNo,
-            notify_url: `https://mirauni.com/api/payment/wechat/notify?app=phototree`,
+            notify_url: `https://mirauni.com/api/payment/wechat/notify/`, // Use mirauni as callback router
             amount: {
                 total: 1, // 0.01 CNY
                 currency: 'CNY'
             },
-            attach: JSON.stringify({ openid: openid, app: 'phototree' })
+            attach: openid // Store openid for callback
         };
 
         const url = '/v3/pay/transactions/native';
@@ -230,16 +235,10 @@ function decryptWeChatPayData(ciphertext, associatedData, nonce, apiV3Key) {
 
 /**
  * @route POST /api/pay/notify
- * @desc Handle WeChat Pay Callback (forwarded from Mirauni gateway)
+ * @desc Handle WeChat Pay Callback
  */
 app.post('/api/pay/notify', async (req, res) => {
     console.log("[Pay] Notification Received - Full Body:", JSON.stringify(req.body, null, 2));
-
-    // 验证来源（可选，简单防护）
-    const forwardedFrom = req.headers['x-forwarded-from'];
-    if (forwardedFrom) {
-        console.log(`[Pay] Request forwarded from: ${forwardedFrom}`);
-    }
 
     try {
         const { resource, event_type } = req.body;
@@ -269,22 +268,13 @@ app.post('/api/pay/notify', async (req, res) => {
 
             console.log("[Pay] Decrypted Payment Data:", paymentData);
         } else {
-            // Direct data (from Mirauni forwarding)
+            // Direct data (shouldn't happen in production)
             paymentData = resource;
-            console.log("[Pay] Direct Payment Data:", paymentData);
+            console.log("[Pay] Unencrypted Payment Data:", paymentData);
         }
 
-        // Extract openid from attach field (支持 JSON 格式)
-        let openid;
-        try {
-            const attachData = JSON.parse(paymentData.attach);
-            openid = attachData.openid;
-            console.log(`[Pay] Parsed attach: app=${attachData.app}, openid=${openid}`);
-        } catch (e) {
-            // 兼容旧格式
-            openid = paymentData.attach || paymentData.payer?.openid;
-        }
-
+        // Extract openid from attach field
+        const openid = paymentData.attach || paymentData.payer?.openid;
         const tradeState = paymentData.trade_state;
         const outTradeNo = paymentData.out_trade_no;
 
@@ -292,12 +282,13 @@ app.post('/api/pay/notify', async (req, res) => {
 
         if (tradeState === 'SUCCESS' && openid) {
             const expireTime = 4102444800000; // Year 2100
-            try {
-                await db.query("UPDATE users SET is_vip = 1, vip_expire_time = $1 WHERE openid = $2", [expireTime, openid]);
-                console.log(`[Pay] ✅ User ${openid} upgraded to Premium via callback`);
-            } catch (err) {
-                console.error("[Pay] Failed to update VIP:", err);
-            }
+            db.run("UPDATE users SET is_vip = 1, vip_expire_time = ? WHERE openid = ?", [expireTime, openid], (err) => {
+                if (err) {
+                    console.error("[Pay] Failed to update VIP:", err);
+                } else {
+                    console.log(`[Pay] ✅ User ${openid} upgraded to Premium via callback`);
+                }
+            });
         } else {
             console.warn(`[Pay] Payment not successful or missing openid. State: ${tradeState}, OpenID: ${openid}`);
         }
@@ -315,36 +306,31 @@ app.post('/api/pay/notify', async (req, res) => {
  * @route POST /api/dev/force-vip
  * @desc [EMERGENCY] Manually set VIP (Use after confirmed payment)
  */
-app.post('/api/dev/force-vip', async (req, res) => {
+app.post('/api/dev/force-vip', (req, res) => {
     const { openid } = req.body;
     // Lifetime VIP (High year)
     const expireTime = 4102444800000; // Year 2100
 
     console.log(`[Emergency] Manually upgrading ${openid} to VIP`);
 
-    try {
-        await db.query("UPDATE users SET is_vip = 1, vip_expire_time = $1 WHERE openid = $2", [expireTime, openid]);
+    db.run("UPDATE users SET is_vip = 1, vip_expire_time = ? WHERE openid = ?", [expireTime, openid], (err) => {
+        if (err) return res.status(500).json({ error: err.message });
         console.log(`[Emergency] ✅ User ${openid} upgraded to Premium`);
         res.json({ success: true, message: "User is now Premium" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    });
 });
 
 /**
  * @route GET /api/user/:openid
  * @desc Get latest user status
  */
-app.get('/api/user/:openid', async (req, res) => {
+app.get('/api/user/:openid', (req, res) => {
     const { openid } = req.params;
-    try {
-        const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
-        const row = result.rows[0];
+    db.get("SELECT * FROM users WHERE openid = ?", [openid], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: "User not found" });
         res.json({ success: true, user: row });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    });
 });
 
 // Conditionally listen (Local Dev)

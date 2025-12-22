@@ -1,18 +1,17 @@
-const { createPool } = require('@vercel/postgres');
-
-const pool = createPool({
-  connectionString: process.env.POSTGRES_URL,
-});
-
-// Test connection on start (optional, but good for logs)
-pool.connect()
-  .then(client => {
-    console.log('[DB] Connected to Postgres Pool');
-    client.release();
-  })
-  .catch(err => console.error('[DB] Pool Connection Error:', err));
+const { createClient } = require('@vercel/postgres');
 
 module.exports = {
-  query: (text, params) => pool.query(text, params),
-  pool
+  query: async (text, params) => {
+    // Error suggested using createClient() for direct connections
+    const client = createClient();
+    await client.connect();
+    try {
+      return await client.query(text, params);
+    } catch (err) {
+      console.error('[DB] Query Error:', err);
+      throw err;
+    } finally {
+      await client.end();
+    }
+  }
 };

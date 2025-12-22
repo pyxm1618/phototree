@@ -729,6 +729,84 @@
             cursor: pointer;
             font-size: 24px;
         }
+
+        /* --- Custom Modal (Replaces Native Alert) --- */
+        #custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s;
+        }
+
+        .custom-modal-content {
+            background: linear-gradient(135deg, #0f1520 0%, #1a2332 100%);
+            border: 1px solid #d4af37;
+            padding: 30px 40px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+            max-width: 400px;
+            width: 85%;
+            transform: scale(0.9);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .modal-title {
+            color: #d4af37;
+            font-size: 20px;
+            font-family: 'Cinzel', serif;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .modal-message {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            word-break: break-all;
+            /* Prevent JSON overflow */
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .modal-btn {
+            background: #d4af37;
+            color: #000;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-btn:hover {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 
@@ -766,17 +844,36 @@
     <div id="pay-modal">
         <div class="pay-content">
             <div class="close-pay" onclick="this.parentElement.parentElement.style.display='none'">&times;</div>
-            <div class="pay-title">购买Premium产品</div>
+            <div class="pay-title">解锁完整版体验</div>
             <div class="pay-desc">
-                购买Premium产品，永久解锁照片上传和音乐上传功能。
-                <br><br>
-                <div id="qrcode-container" style="display:flex; justify-content:center; margin: 20px 0;"></div>
-                <div id="pay-status-text" style="color:#888; font-size:12px; text-align:center;"></div>
-                <small style="color:#666">(演示模式:点击模拟支付)</small>
+                成为 Premium 会员，永久珍藏您的专属记忆。
+                <br>
+                <ul style="text-align:left; padding-left:20px; margin: 15px 0; font-size:13px; color:#ccc;">
+                    <li>✨ 永久解锁无限制照片上传</li>
+                    <li>🎵 永久解锁自定义背景音乐</li>
+                    <li>🚀 专属 VIP 金色尊贵标识</li>
+                </ul>
+                <div id="qrcode-container"
+                    style="display:flex; justify-content:center; margin: 20px 0; min-height:200px; align-items:center; background:rgba(0,0,0,0.3); border-radius:8px;">
+                    <!-- Placeholder or QR Code -->
+                    <span style="font-size:12px; color:#666;">点击下方按钮生成支付码</span>
+                </div>
+                <div id="pay-status-text" style="color:#d4af37; font-size:12px; text-align:center; min-height:20px;">
+                </div>
             </div>
             <button class="pay-btn" id="confirm-pay">
-                <span>微信支付</span>
+                <span>立即开通 (￥0.01)</span>
             </button>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="custom-modal">
+        <div class="custom-modal-content">
+            <span class="modal-icon" id="c-modal-icon">✅</span>
+            <div class="modal-title" id="c-modal-title">提示</div>
+            <div class="modal-message" id="c-modal-msg">内容</div>
+            <button class="modal-btn" onclick="document.getElementById('custom-modal').style.display='none'">确定</button>
         </div>
     </div>
 
@@ -784,7 +881,9 @@
         <div class="loader-content">
             <div class="loader-title">Christmas Memories</div>
 
-            <div class="gesture-guide">
+            <!-- Optimized loading text -->
+            <div class="gesture-guide" id="loading-guide">
+
                 <div class="gesture-item">
                     <span class="gesture-icon">✊</span>
                     <div class="gesture-name">握拳</div>
@@ -1287,13 +1386,21 @@
                             if (isPaid) clearInterval(pollInterval);
                         }, 3000);
                     } else {
-                        // Force full details display
+                        // Custom Modal Error
                         const errorDetails = orderRes.details ? JSON.stringify(orderRes.details, null, 2) : (orderRes.error || "Unknown Error");
-                        alert("订单创建失败 (JSON):\n" + errorDetails);
+                        showCustomModal('⚠️', '订单创建失败', errorDetails);
                         console.error("Full Order Res:", orderRes);
                         confirmPay.innerText = "重试";
                     }
                 };
+            }
+
+            // Helper: Show Custom Modal
+            function showCustomModal(icon, title, msg) {
+                document.getElementById('c-modal-icon').innerText = icon;
+                document.getElementById('c-modal-title').innerText = title;
+                document.getElementById('c-modal-msg').innerText = msg;
+                document.getElementById('custom-modal').style.display = 'flex';
             }
 
             async function checkPaymentStatus() {
@@ -1303,14 +1410,20 @@
                     handleLoginSuccess(userRes.user);
                     const modal = document.getElementById('pay-modal');
                     if (modal) modal.style.display = 'none';
-                    alert("支付成功！感谢您的支持。");
+                    showCustomModal('🎉', '支付成功', '感谢您的支持！\n您已解锁所有高级功能。');
                     return true;
                 }
                 return false;
             }
 
-            // Initial Load (only predefined images, user images loaded after login)
-            loadPredefinedImages();
+            // 核心逻辑优化：如果用户有照片，就不加载默认照片
+            const hasUserPhotos = await loadUserImages();
+            if (!hasUserPhotos) {
+                console.log("No user photos found, loading default demo photos.");
+                loadPredefinedImages();
+            } else {
+                console.log("User photos loaded, skipping defaults.");
+            }
 
             // Logout handler
             const logoutBtn = document.getElementById('logout-btn');
@@ -1408,22 +1521,22 @@
             {
                 emoji: '🎄',
                 title: '欢迎来到圣诞树回忆相册！',
-                body: '这是一个用手势控制的3D照片墙。<br><br>让我们开始吧！'
+                body: '这是一个用手势控制的3D照片墙。<br>现在，这是属于您的专属空间。'
             },
             {
                 emoji: '✋',
                 title: '手势控制说明',
-                body: '<strong>🤜 握拳</strong> → 照片聚合成圣诞树<br><br><strong>✌️ 捏合</strong> → 聚焦单张照片<br><br><strong>🖐️ 张开</strong> → 照片散开飞舞'
+                body: '<strong>🤜 握拳</strong> → 照片聚合<br><strong>✌️ 捏合</strong> → 聚焦查看<br><strong>🖐️ 张开</strong> → 漫天飞舞'
             },
             {
                 emoji: '📸',
                 title: '上传您的回忆',
-                body: '1. 点击右下角"选择文件"<br>2. 选择多张照片（支持批量）<br>3. 照片会自动保存<br><br>💡 <small>提示：购买Premium解锁此功能</small>'
+                body: '点击右下角"选择文件"，上传您的个人照片。<br>您的照片将自动替换默认演示照片。<br><br>💡 <small>Premium功能</small>'
             },
             {
                 emoji: '🎵',
                 title: '自定义背景音乐',
-                body: '点击"上传音乐"按钮上传您喜欢的音乐文件。<br><br>💡 <small>提示：Premium专属功能</small>'
+                body: '上传您喜欢的音乐，打造沉浸式氛围。<br><br>💡 <small>Premium功能</small>'
             }
         ];
 

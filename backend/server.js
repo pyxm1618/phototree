@@ -378,6 +378,17 @@ app.get('/api/user/:openid', async (req, res) => {
     }
 });
 
+// [DEBUG] Check Environment Variables
+app.get('/api/dev/check-env', (req, res) => {
+    const envStatus = {
+        POSTGRES_URL: process.env.POSTGRES_URL ? 'EXISTS' : 'MISSING',
+        POSTGRES_URL_NON_POOLING: process.env.POSTGRES_URL_NON_POOLING ? 'EXISTS' : 'MISSING',
+        WECHAT_APP_ID: process.env.WECHAT_APP_ID ? 'EXISTS' : 'MISSING',
+        WECHAT_APP_SECRET: process.env.WECHAT_APP_SECRET ? 'EXISTS' : 'MISSING',
+    };
+    res.json(envStatus);
+});
+
 // [DEBUG] Manual DB Init Route
 app.get('/api/dev/init-db', async (req, res) => {
     try {

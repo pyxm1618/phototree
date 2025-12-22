@@ -190,15 +190,16 @@ async function handleUserLogin(openid, res) {
  * @route POST /api/pay/create-order
  * @desc Create a Native Pay Transaction (QR Code)
  */
+// [Modified] Create Order - Returns 200 even on failure to ensure frontend alert sees the message
 app.post('/api/pay/create-order', async (req, res) => {
     const { openid } = req.body;
-    if (!openid) return res.status(400).json({ error: "Missing openid" });
+    if (!openid) return res.json({ success: false, error: "Missing openid" });
 
-    // Check credentials
-    if (!WECHAT_APP_ID || !WECHAT_MCH_ID || !WECHAT_API_V3_KEY || !WECHAT_CERT_SERIAL_NO || !WECHAT_PRIVATE_KEY) {
-        return res.status(500).json({
+    // Check credentials (using process.env directly)
+    if (!process.env.WECHAT_APP_ID || !process.env.WECHAT_MCH_ID || !process.env.WECHAT_API_V3_KEY || !process.env.WECHAT_CERT_SERIAL_NO || !process.env.WECHAT_PRIVATE_KEY) {
+        return res.json({
             success: false,
-            error: "WeChat Pay not configured. Please contact administrator."
+            error: "WeChat Pay not configured. Env Vars missing."
         });
     }
 
@@ -210,8 +211,8 @@ app.post('/api/pay/create-order', async (req, res) => {
         console.log(`[Pay] Creating Native Order: ${outTradeNo} for ${openid}`);
 
         const requestBody = {
-            appid: WECHAT_APP_ID,
-            mchid: WECHAT_MCH_ID,
+            appid: process.env.WECHAT_APP_ID,
+            mchid: process.env.WECHAT_MCH_ID,
             description: description,
             out_trade_no: outTradeNo,
             notify_url: `https://mirauni.com/api/payment/wechat/notify?app=phototree`,
@@ -243,15 +244,20 @@ app.post('/api/pay/create-order', async (req, res) => {
                 orderId: outTradeNo
             });
         } else {
-            console.error("WxPay Error:", response.data);
-            res.status(500).json({ error: "Failed to create WeChat order", details: response.data });
+            console.error("WxPay Error Response:", response.data);
+            res.json({ success: false, error: "微信返回错误", details: response.data });
         }
 
     } catch (error) {
-        console.error("Payment Creation Failed:", error.response?.data || error.message);
-        res.status(500).json({
+        // Capture WeChat API Error Details
+        const wxError = error.response?.data;
+        console.error("Payment Creation Exception:", wxError || error.message);
+
+        // Return 200 so frontend alert stringifies the details
+        res.json({
+            success: false,
             error: error.message,
-            details: error.response?.data
+            details: wxError || "No details"
         });
     }
 });

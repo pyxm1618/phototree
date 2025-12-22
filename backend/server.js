@@ -392,7 +392,7 @@ app.get('/api/dev/check-env', (req, res) => {
 // [DEBUG] Manual DB Init Route
 app.get('/api/dev/init-db', async (req, res) => {
     try {
-        await db.sql`
+        const queryText = `
           CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             openid TEXT UNIQUE NOT NULL,
@@ -401,6 +401,7 @@ app.get('/api/dev/init-db', async (req, res) => {
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           );
         `;
+        await db.query(queryText);
         res.send("Database initialized successfully! Table 'users' should exist now.");
     } catch (err) {
         console.error("Init DB Error:", err);

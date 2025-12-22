@@ -108,11 +108,27 @@ app.get('/api/callback/wechat', async (req, res) => {
         }
 
         const openid = data.openid;
-        // access_token is also available if we need more info (nickname, avatar), but openid is enough for now.
+        const accessToken = data.access_token;
+
         console.log(`[Callback] Authenticated OpenID: ${openid}`);
 
-        // Ensure user exists in DB
-        await ensureUserExists(openid);
+        // Get User Info (Nickname, Avatar)
+        let nickname = '微信用户';
+        let avatarUrl = '';
+        try {
+            const userInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${accessToken}&openid=${openid}&lang=zh_CN`;
+            const userRes = await axios.get(userInfoUrl);
+            if (userRes.data && !userRes.data.errcode) {
+                nickname = userRes.data.nickname;
+                avatarUrl = userRes.data.headimgurl;
+                console.log(`[Callback] Fetched User Info: ${nickname}`);
+            }
+        } catch (err) {
+            console.error('[Callback] Failed to fetch user info:', err.message);
+        }
+
+        // Ensure user exists and update profile
+        await ensureUserExists(openid, nickname, avatarUrl);
 
         // Redirect back to home with openid (In production, use a secure session/token)
         // For MVP: Passing openid in query is risky but functional for this "toy" project.
@@ -124,12 +140,15 @@ app.get('/api/callback/wechat', async (req, res) => {
     }
 });
 
-async function ensureUserExists(openid) {
+async function ensureUserExists(openid, nickname = '微信用户', avatarUrl = '') {
     try {
         const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
         if (!result.rows[0]) {
             console.log(`[DB] Creating new user: ${openid}`);
-            await db.query("INSERT INTO users (openid) VALUES ($1)", [openid]);
+            await db.query("INSERT INTO users (openid, nickname, avatar_url) VALUES ($1, $2, $3)", [openid, nickname, avatarUrl]);
+        } else {
+            // Update profile on every login
+            await db.query("UPDATE users SET nickname = $1, avatar_url = $2 WHERE openid = $3", [nickname, avatarUrl, openid]);
         }
     } catch (err) {
         console.error('[DB] User Ensure Error:', err);
@@ -397,12 +416,21 @@ app.get('/api/dev/init-db', async (req, res) => {
           CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             openid TEXT UNIQUE NOT NULL,
+            nickname TEXT,
+            avatar_url TEXT,
             is_vip INTEGER DEFAULT 0,
             vip_expire_time BIGINT DEFAULT 0,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           );
         `);
-        res.send("Database initialized successfully! Table 'users' should exist now.");
+        // Add columns if not exist (for existing tables)
+        try {
+            await db.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname TEXT;");
+            await db.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;");
+        } catch (e) {
+            console.log("Columns likely exist or error ignored:", e.message);
+        }
+        res.send("Database initialized/updated successfully!");
     } catch (err) {
         console.error("Init DB Error:", err);
         res.status(500).send("Init failed: " + err.message);

@@ -1364,7 +1364,16 @@
             if (card) {
                 card.style.display = 'flex';
                 const userIdSpan = document.getElementById('user-id');
-                if (userIdSpan) userIdSpan.innerText = `用户: ${user.openid.substr(0, 6)}`;
+
+                // Construct Profile HTML
+                let profileHtml = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        ${user.avatar_url ? `<img src="${user.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid gold;">` : ''}
+                        <span>${user.nickname || '用户'}</span>
+                    </div>
+                `;
+
+                if (userIdSpan) userIdSpan.innerHTML = profileHtml;
 
                 if (user.is_vip) {
                     // Premium user: show badge, hide pay button, show upload

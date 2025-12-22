@@ -682,52 +682,81 @@
         }
 
         .pay-content {
-            background: #0f1520;
-            border: 1px solid #d4af37;
+            background: rgba(10, 15, 25, 0.95);
+            border: 1px solid rgba(212, 175, 55, 0.3);
             padding: 40px;
             text-align: center;
-            max-width: 400px;
+            max-width: 360px;
             width: 90%;
             position: relative;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 8px;
         }
 
         .pay-title {
             color: #d4af37;
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-family: 'Cinzel';
+            font-size: 22px;
+            margin-bottom: 25px;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            padding-bottom: 15px;
         }
 
-        .pay-desc {
-            color: #aaa;
-            margin-bottom: 30px;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-
-        .pay-btn {
-            background: #1aad19;
+        .pay-price {
+            font-size: 32px;
             color: #fff;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            margin-bottom: 20px;
+            font-family: 'Times New Roman', serif;
+            font-weight: bold;
+        }
+
+        #qrcode-wrapper {
+            background: #fff;
+            padding: 10px;
+            display: inline-block;
             border-radius: 4px;
-            cursor: pointer;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+        }
+
+        .pay-benefits {
             display: flex;
-            align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin: 0 auto;
+            gap: 10px;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .benefit-separator {
+            color: #333;
+        }
+
+        .scan-tip {
+            font-size: 10px;
+            color: #555;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 10px;
         }
 
         .close-pay {
             position: absolute;
-            top: 10px;
-            right: 15px;
-            color: #666;
+            top: 15px;
+            right: 20px;
+            color: #444;
             cursor: pointer;
             font-size: 24px;
+            transition: color 0.3s;
+        }
+
+        .close-pay:hover {
+            color: #d4af37;
         }
 
         /* --- Custom Modal (Replaces Native Alert) --- */
@@ -882,30 +911,38 @@
         </div>
     </div>
 
-    <!-- Pay Modal -->
+    <!-- Pay Modal (Redesigned) -->
     <div id="pay-modal">
         <div class="pay-content">
             <div class="close-pay" onclick="this.parentElement.parentElement.style.display='none'">&times;</div>
-            <div class="pay-title">解锁完整版体验</div>
-            <div class="pay-desc">
-                成为 Premium 会员，永久珍藏您的专属记忆。
-                <br>
-                <ul style="text-align:left; padding-left:20px; margin: 15px 0; font-size:13px; color:#ccc;">
-                    <li>✨ 永久解锁无限制照片上传</li>
-                    <li>🎵 永久解锁自定义背景音乐</li>
-                    <li>🚀 专属 VIP 金色尊贵标识</li>
-                </ul>
-                <div id="qrcode-container"
-                    style="display:flex; justify-content:center; margin: 20px 0; min-height:200px; align-items:center; background:rgba(0,0,0,0.3); border-radius:8px;">
-                    <!-- Placeholder or QR Code -->
-                    <span style="font-size:12px; color:#666;">点击下方按钮生成支付码</span>
+            <div class="pay-title">UNLOCK PREMIUM</div>
+
+            <!-- Loading State -->
+            <div id="pay-loading" style="padding: 40px 0;">
+                <div class="loader-bar-container" style="width:100px; height:2px; margin:0 auto;">
+                    <div class="loader-bar"></div>
                 </div>
-                <div id="pay-status-text" style="color:#d4af37; font-size:12px; text-align:center; min-height:20px;">
-                </div>
+                <div style="margin-top:15px; font-size:12px; color:#d4af37; letter-spacing:2px;">正在生成支付订单...</div>
             </div>
-            <button class="pay-btn" id="confirm-pay">
-                <span>立即开通 (￥0.01)</span>
-            </button>
+
+            <!-- QR Code Area (Hidden initially) -->
+            <div id="pay-qr-area" style="display:none; animation: fadeIn 0.5s;">
+                <div class="pay-price">￥0.01 <span style="font-size:12px; color:#666;">/ 永久解锁</span></div>
+
+                <div id="qrcode-wrapper">
+                    <div id="qrcode-container"></div>
+                </div>
+
+                <div class="pay-benefits">
+                    <div class="benefit-item">无限制照片上传</div>
+                    <div class="benefit-separator">|</div>
+                    <div class="benefit-item">自定义背景音乐</div>
+                    <div class="benefit-separator">|</div>
+                    <div class="benefit-item">尊贵身份标识</div>
+                </div>
+
+                <div class="scan-tip">请使用微信扫一扫</div>
+            </div>
         </div>
     </div>
 
@@ -1387,62 +1424,65 @@
                 }
             }
 
-            // Pay Handler
+            // Pay Handler (Auto Trigger)
             if (btnPay) {
-                btnPay.onclick = () => {
+                btnPay.onclick = async () => {
                     const modal = document.getElementById('pay-modal');
+                    const loading = document.getElementById('pay-loading');
+                    const qrArea = document.getElementById('pay-qr-area');
+
                     if (modal) modal.style.display = 'flex';
-                };
-            }
+                    if (loading) loading.style.display = 'block';
+                    if (qrArea) qrArea.style.display = 'none';
 
-            if (confirmPay) {
-                confirmPay.onclick = async () => {
-                    confirmPay.innerText = "正在创建订单...";
-                    if (!currentUser) return;
+                    if (!currentUser) {
+                        alert("请先登录"); // Should not happen as btn is hidden
+                        return;
+                    }
 
-                    const orderRes = await API.createOrder(currentUser.openid);
+                    try {
+                        const orderRes = await API.createOrder(currentUser.openid);
+                        if (orderRes.success && orderRes.codeUrl) {
+                            if (loading) loading.style.display = 'none';
+                            if (qrArea) qrArea.style.display = 'block';
 
-                    if (orderRes.success && orderRes.codeUrl) {
-                        // Real Payment Mode (Native Pay)
-                        confirmPay.style.display = 'none'; // Hide button
-                        const qrContainer = document.getElementById('qrcode-container');
-                        const statusText = document.getElementById('pay-status-text');
+                            const qrContainer = document.getElementById('qrcode-container');
+                            if (qrContainer) {
+                                qrContainer.innerHTML = "";
+                                new QRCode(qrContainer, {
+                                    text: orderRes.codeUrl,
+                                    width: 180,
+                                    height: 180,
+                                    colorDark: "#000000",
+                                    colorLight: "#ffffff",
+                                    correctLevel: QRCode.CorrectLevel.H
+                                });
+                            }
 
-                        if (!qrContainer || !statusText) {
-                            console.error("Payment modal elements not found!");
-                            alert("支付界面加载失败,请刷新页面重试");
-                            return;
+                            // Start Polling
+                            const pollInterval = setInterval(async () => {
+                                const isPaid = await checkPaymentStatus();
+                                if (isPaid) clearInterval(pollInterval);
+                                // Stop polling if modal closed? ideal but ok for now
+                            }, 3000);
+
+                        } else {
+                            const errorDetails = orderRes.details ? JSON.stringify(orderRes.details, null, 2) : (orderRes.error || "Unknown Error");
+                            showCustomModal('⚠️', '订单创建失败', errorDetails);
+                            if (modal) modal.style.display = 'none';
                         }
-
-                        qrContainer.innerHTML = ""; // Clear prev
-
-                        // Generate QR Code
-                        new QRCode(qrContainer, {
-                            text: orderRes.codeUrl,
-                            width: 200,
-                            height: 200,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.H
-                        });
-
-                        statusText.innerText = "请使用微信扫码支付 (￥0.01)";
-
-                        // Start Polling
-                        console.log("[Pay] Starting payment status polling...");
-                        const pollInterval = setInterval(async () => {
-                            const isPaid = await checkPaymentStatus();
-                            if (isPaid) clearInterval(pollInterval);
-                        }, 3000);
-                    } else {
-                        // Custom Modal Error
-                        const errorDetails = orderRes.details ? JSON.stringify(orderRes.details, null, 2) : (orderRes.error || "Unknown Error");
-                        showCustomModal('⚠️', '订单创建失败', errorDetails);
-                        console.error("Full Order Res:", orderRes);
-                        confirmPay.innerText = "重试";
+                    } catch (e) {
+                        console.error(e);
+                        showCustomModal('⚠️', '网络错误', "无法连接服务器");
+                        if (modal) modal.style.display = 'none';
                     }
                 };
             }
+
+            // Remove old confirmPay Logic since we auto-trigger
+            /*
+            if (confirmPay) { ... }
+            */
 
             // Helper: Show Custom Modal
             function showCustomModal(icon, title, msg) {

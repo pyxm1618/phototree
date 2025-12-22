@@ -1,28 +1,18 @@
-const { sql } = require('@vercel/postgres');
+const { createPool } = require('@vercel/postgres');
 
-// Initialize database table
-(async () => {
-  try {
-    console.log('[DB] Connecting to Vercel Postgres...');
-    await sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        openid TEXT UNIQUE NOT NULL,
-        is_vip INTEGER DEFAULT 0,
-        vip_expire_time BIGINT DEFAULT 0,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    console.log('[DB] Users table is ready.');
-  } catch (err) {
-    console.error('[DB] Initialization Failed:', err);
-  }
-})();
+const pool = createPool({
+  connectionString: process.env.POSTGRES_URL,
+});
+
+// Test connection on start (optional, but good for logs)
+pool.connect()
+  .then(client => {
+    console.log('[DB] Connected to Postgres Pool');
+    client.release();
+  })
+  .catch(err => console.error('[DB] Pool Connection Error:', err));
 
 module.exports = {
-  // Query helper
-  query: async (text, params) => {
-    return await sql.query(text, params);
-  },
-  sql
+  query: (text, params) => pool.query(text, params),
+  pool
 };

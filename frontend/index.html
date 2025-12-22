@@ -555,6 +555,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
 
     <script type="importmap">
         {
@@ -740,6 +741,11 @@
         </div>
 
         <button id="btn-login" class="btn-login">微信登录</button>
+        <!-- WeChat Login QR Container -->
+        <div id="wx-login-container" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; z-index:200; border-radius:10px; box-shadow:0 0 20px rgba(0,0,0,0.5);">
+            <div style="text-align:right; cursor:pointer; color:black; margin-bottom:10px;" onclick="document.getElementById('wx-login-container').style.display='none'">✖</div>
+            <div id="login_container"></div>
+        </div>
 
         <button id="btn-pay" class="btn-login"
             style="display:none; background:#222; border:1px solid #d4af37; color:#d4af37; margin-left:0; margin-right:10px;">购买
@@ -1174,19 +1180,45 @@
             }
 
             // Login Handler
+            // Login Handler (Website QR Code)
             if (btnLogin) {
-                btnLogin.onclick = async () => {
-                    btnLogin.innerText = "Logging in...";
-                    try {
-                        const res = await API.login();
-                        if (res.success) {
-                            handleLoginSuccess(res.user);
-                        }
-                    } catch (e) {
-                        btnLogin.innerText = "Login Failed";
-                        console.error(e);
+                btnLogin.onclick = () => {
+                    const container = document.getElementById('wx-login-container');
+                    if (container) {
+                        container.style.display = 'block';
+                        // Initialize WxLogin
+                        // Need to clear previous iframe if any
+                        const inner = document.getElementById('login_container');
+                        inner.innerHTML = '';
+                        
+                        new WxLogin({
+                            self_redirect: false,
+                            id: "login_container",
+                            appid: "wxb243ed29b96f8a49", // Website App ID from screenshot
+                            scope: "snsapi_login",
+                            redirect_uri: encodeURIComponent("https://aiguess.cn/api/callback/wechat"),
+                            state: Math.random().toString(36).substr(2),
+                            style: "black",
+                            href: ""
+                        });
                     }
                 };
+            }
+            
+            // Check for Login Callback (URL Params)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('login_success') === 'true' && urlParams.get('openid')) {
+                const openid = urlParams.get('openid');
+                // Clean URL
+                window.history.replaceState({}, document.title, "/");
+                
+                // Retrieve user info (mocking the full object or fetching it)
+                // For now, simpler to just "trust" the openid or fetch fresh
+                API.getUser(openid).then(res => {
+                    if (res.success) handleLoginSuccess(res.user);
+                }).catch(e => {
+                    console.error("Failed to load user after callback", e);
+                });
             }
 
             // Pay Handler

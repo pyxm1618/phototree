@@ -64,46 +64,77 @@ function buildAuthHeader(method, url, body) {
  * @route POST /api/login
  * @desc Handle WeChat Login
  */
+// [DEPRECATED] Mini Program Login - Kept for reference or future Mini Program support
 app.post('/api/login', async (req, res) => {
+    // ... existing mock/logic kept as is or simplifed ...
+    // For now I'll just leave it but maybe add a comment.
+    // Actually, I should probably leave it for local mock dev.
     const { code } = req.body;
-    console.log(`[Login] Request received. Code: ${code}`);
 
-    if (!code) {
-        // For local dev without code, generate mock
-        const mockOpenId = `dev_user_${Date.now()}`;
+    // Local Dev Mock
+    if (!code || code.startsWith('dev_')) {
+        const mockOpenId = code ? `user_${code}` : `dev_user_${Date.now()}`;
         return handleUserLogin(mockOpenId, res);
     }
 
+    res.status(400).json({ error: "Use Website QR Login instead" });
+});
+
+/**
+ * @route GET /api/callback/wechat
+ * @desc Handle WeChat OAuth2 Callback (Website Application)
+ */
+app.get('/api/callback/wechat', async (req, res) => {
+    const { code, state } = req.query;
+    console.log(`[Callback] Received code: ${code}`);
+
+    if (!code) {
+        return res.redirect('/?error=no_code');
+    }
+
     try {
-        // Real WeChat Login
         const APP_ID = process.env.WECHAT_APP_ID;
         const APP_SECRET = process.env.WECHAT_APP_SECRET;
 
-        if (!APP_ID || !APP_SECRET) {
-            console.error('[Login] WECHAT_APP_ID or WECHAT_APP_SECRET is not set in env!');
-            return res.status(500).json({ error: 'Server Config Error: Missing App ID or Secret' });
-        }
-
-        const url = `https://api.weixin.qq.com/sns/jscode2session?appid=${APP_ID}&secret=${APP_SECRET}&js_code=${code}&grant_type=authorization_code`;
+        // Website App uses 'oauth2/access_token'
+        const url = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${APP_ID}&secret=${APP_SECRET}&code=${code}&grant_type=authorization_code`;
 
         const response = await axios.get(url);
         const data = response.data;
 
         if (data.errcode) {
-            console.error('[Login] WeChat API Error:', data);
-            return res.status(500).json({ error: `WeChat Auth Failed: ${data.errmsg}` });
+            console.error('[Callback] WeChat API Error:', data);
+            return res.redirect(`/?error=wechat_api_error&msg=${data.errmsg}`);
         }
 
         const openid = data.openid;
-        console.log(`[Login] Authenticated OpenID: ${openid}`);
+        // access_token is also available if we need more info (nickname, avatar), but openid is enough for now.
+        console.log(`[Callback] Authenticated OpenID: ${openid}`);
 
-        await handleUserLogin(openid, res);
+        // Ensure user exists in DB
+        await ensureUserExists(openid);
+
+        // Redirect back to home with openid (In production, use a secure session/token)
+        // For MVP: Passing openid in query is risky but functional for this "toy" project.
+        res.redirect(`/?openid=${openid}&login_success=true`);
 
     } catch (error) {
-        console.error('[Login] System Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('[Callback] System Error:', error);
+        res.redirect('/?error=system_error');
     }
 });
+
+async function ensureUserExists(openid) {
+    try {
+        const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
+        if (!result.rows[0]) {
+            console.log(`[DB] Creating new user: ${openid}`);
+            await db.query("INSERT INTO users (openid) VALUES ($1)", [openid]);
+        }
+    } catch (err) {
+        console.error('[DB] User Ensure Error:', err);
+    }
+}
 
 async function handleUserLogin(openid, res) {
     try {

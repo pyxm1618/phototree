@@ -215,7 +215,9 @@ app.post('/api/pay/create-order', async (req, res) => {
             mchid: process.env.WECHAT_MCH_ID,
             description: description,
             out_trade_no: outTradeNo,
-            notify_url: `https://mirauni.com/api/payment/wechat/notify?app=phototree`,
+            // FIX: WeChat API does not allow query params in notify_url
+            // We use 'attach' field to pass custom data
+            notify_url: `https://aiguess.cn/api/pay/notify`,
             amount: {
                 total: 1, // 0.01 CNY
                 currency: 'CNY'

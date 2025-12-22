@@ -1230,7 +1230,7 @@
                     if (res.success) {
                         handleLoginSuccess(res.user);
                     } else {
-                        alert("登录成功但获取用户信息失败，请查看控制台日志。");
+                        alert("登录成功但获取用户信息失败:\n" + JSON.stringify(res));
                         console.error("User fetch success=false", res);
                     }
                 }).catch(e => {

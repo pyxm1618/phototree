@@ -378,6 +378,24 @@ app.get('/api/user/:openid', async (req, res) => {
     }
 });
 
+// [DEBUG] Manual DB Init Route
+app.get('/api/dev/init-db', async (req, res) => {
+    try {
+        await db.sql`
+          CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            openid TEXT UNIQUE NOT NULL,
+            is_vip INTEGER DEFAULT 0,
+            vip_expire_time BIGINT DEFAULT 0,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `;
+        res.send("Database initialized successfully! Table 'users' should exist now.");
+    } catch (err) {
+        res.status(500).send("Init failed: " + err.message);
+    }
+});
+
 // Conditionally listen (Local Dev)
 if (require.main === module) {
     app.listen(PORT, () => {

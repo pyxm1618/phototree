@@ -448,6 +448,54 @@ app.get('/api/dev/init-db', async (req, res) => {
     }
 });
 
+/**
+ * @route GET /api/dev/check-pay-config
+ * @desc Validate WeChat Pay Credentials & Crypto
+ */
+app.get('/api/dev/check-pay-config', (req, res) => {
+    try {
+        const results = {
+            env: {
+                WECHAT_APP_ID: process.env.WECHAT_APP_ID ? 'Set' : 'Missing',
+                WECHAT_MCH_ID: process.env.WECHAT_MCH_ID ? 'Set' : 'Missing',
+                WECHAT_API_V3_KEY: process.env.WECHAT_API_V3_KEY ? 'Set' : 'Missing',
+                WECHAT_CERT_SERIAL_NO: process.env.WECHAT_CERT_SERIAL_NO ? 'Set' : 'Missing',
+                WECHAT_PRIVATE_KEY: process.env.WECHAT_PRIVATE_KEY ? 'Set (len=' + process.env.WECHAT_PRIVATE_KEY.length + ')' : 'Missing'
+            },
+            cryptoTest: 'Pending'
+        };
+
+        // 1. Process Key
+        let privateKey = process.env.WECHAT_PRIVATE_KEY;
+        if (privateKey) {
+            if (privateKey.includes('\\n')) privateKey = privateKey.replace(/\\n/g, '\n');
+            // Try base64
+            if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+                try {
+                    const decoded = Buffer.from(privateKey, 'base64').toString('utf-8');
+                    if (decoded.includes('-----BEGIN PRIVATE KEY-----')) privateKey = decoded;
+                } catch (e) { }
+            }
+        }
+
+        // 2. Test Sign
+        try {
+            const sign = crypto.createSign('RSA-SHA256');
+            sign.update('test_message');
+            const signature = sign.sign(privateKey, 'base64');
+            results.cryptoTest = `Success (Sig len: ${signature.length})`;
+        } catch (e) {
+            results.cryptoTest = `FAILED: ${e.message}`;
+            console.error("Crypto Test Failed:", e);
+        }
+
+        res.json(results);
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Conditionally listen (Local Dev)
 if (require.main === module) {
     app.listen(PORT, () => {

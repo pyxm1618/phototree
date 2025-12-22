@@ -36,26 +36,37 @@ function generateSignature(method, url, timestamp, nonce, body, privateKey) {
 }
 
 // Helper: Build Authorization Header
+// Helper: Build Authorization Header
 function buildAuthHeader(method, url, body) {
-    if (!WECHAT_PRIVATE_KEY || !WECHAT_MCH_ID || !WECHAT_CERT_SERIAL_NO) {
+    if (!process.env.WECHAT_PRIVATE_KEY || !process.env.WECHAT_MCH_ID || !process.env.WECHAT_CERT_SERIAL_NO) {
         throw new Error("Missing WeChat Pay credentials");
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
     const nonce = crypto.randomBytes(16).toString('hex');
 
-    // Decode Base64 private key
-    let privateKey;
-    try {
-        privateKey = Buffer.from(WECHAT_PRIVATE_KEY, 'base64').toString('utf-8');
-    } catch (e) {
-        // If not Base64, use as-is
-        privateKey = WECHAT_PRIVATE_KEY;
+    let privateKey = process.env.WECHAT_PRIVATE_KEY;
+
+    // FIX: Handle Vercel Env Var Newlines
+    // If key contains literal "\n" characters (common in Vercel), replace them with real newlines
+    if (privateKey.includes('\\n')) {
+        privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+
+    // Check if key is base64 encoded (legacy logic, but good to keep optional)
+    // Only attempt decode if it DOES NOT look like a PEM key
+    if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
+        try {
+            const decoded = Buffer.from(privateKey, 'base64').toString('utf-8');
+            if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
+                privateKey = decoded;
+            }
+        } catch (e) {/* ignore */ }
     }
 
     const signature = generateSignature(method, url, timestamp, nonce, body, privateKey);
 
-    return `WECHATPAY2-SHA256-RSA2048 mchid="${WECHAT_MCH_ID}",nonce_str="${nonce}",signature="${signature}",timestamp="${timestamp}",serial_no="${WECHAT_CERT_SERIAL_NO}"`;
+    return `WECHATPAY2-SHA256-RSA2048 mchid="${process.env.WECHAT_MCH_ID}",nonce_str="${nonce}",signature="${signature}",timestamp="${timestamp}",serial_no="${process.env.WECHAT_CERT_SERIAL_NO}"`;
 }
 
 // --- API Routes ---

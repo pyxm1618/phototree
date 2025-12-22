@@ -820,10 +820,10 @@
 
         <button id="btn-login" class="btn-login">微信登录</button>
         <!-- WeChat Login QR Container -->
-        <div id="wx-login-container"
-            style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; z-index:200; border-radius:10px; box-shadow:0 0 20px rgba(0,0,0,0.5);">
-            <div style="text-align:right; cursor:pointer; color:black; margin-bottom:10px;"
-                onclick="document.getElementById('wx-login-container').style.display='none'">✖</div>
+        <div id="wx-login-container">
+            <div class="wx-login-close" onclick="document.getElementById('wx-login-container').style.display='none'">×
+            </div>
+            <div class="wx-login-title">LOGIN</div>
             <div id="login_container"></div>
         </div>
 
@@ -1287,20 +1287,27 @@
                     const container = document.getElementById('wx-login-container');
                     if (container) {
                         container.style.display = 'block';
+                        container.classList.add('wx-login-modal'); // Add the new class
                         // Initialize WxLogin
                         // Need to clear previous iframe if any
                         const inner = document.getElementById('login_container');
                         inner.innerHTML = '';
 
+                        // Data URI CSS to style the iframe content (Hide title, transparent bg)
+                        // Note: WeChat might sanitize this, but standard practice is to use href.
+                        // We try to make it look cleaner.
+                        // Background transparent, text light.
+                        const customCss = "data:text/css;base64,LmltcG93ZXJCb3ggLnFyY29kZSB7d2lkdGg6IDIwMHB4O30KLmltcG93ZXJCb3ggLnRpdGxlIHtkaXNwbGF5OiBub25lO30KLmltcG93ZXJCb3ggLmluZm8ge2Rpc3BsYXk6IG5vbmU7fQ0KLmltcG93ZXJCb3ggLnN0YXR1cyB7Y29sb3I6ICNjY2M7fQ==";
+
                         new WxLogin({
                             self_redirect: false,
                             id: "login_container",
-                            appid: "wxb243ed29b96f8a49", // Website App ID from screenshot
+                            appid: "wxb243ed29b96f8a49",
                             scope: "snsapi_login",
                             redirect_uri: encodeURIComponent("https://aiguess.cn/api/callback/wechat"),
                             state: Math.random().toString(36).substr(2),
                             style: "black",
-                            href: ""
+                            href: customCss
                         });
                     }
                 };

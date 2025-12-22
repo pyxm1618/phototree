@@ -210,8 +210,14 @@ app.post('/api/pay/create-order', async (req, res) => {
     try {
         console.log(`[Pay] Creating Native Order: ${outTradeNo} for ${openid}`);
 
+        // STRATEGY: Two-AppID Mode
+        // Login: Website AppID (wxb243...) - Used for user auth
+        // Payment: Mini Program AppID (wx746...) - Used for payment generation (Must be bound to Merchant)
+        // Native Pay does not check OpenID against AppID during order creation, so this is safe.
+        const PAY_APP_ID = 'wx746a39363f67ae95'; // 小树荫助手 (Verified from user screenshot)
+
         const requestBody = {
-            appid: process.env.WECHAT_APP_ID,
+            appid: PAY_APP_ID,
             mchid: process.env.WECHAT_MCH_ID,
             description: description,
             out_trade_no: outTradeNo,

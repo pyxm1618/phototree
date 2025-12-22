@@ -2322,16 +2322,41 @@
 
             if (navigator.mediaDevices?.getUserMedia) {
                 try {
+                    // Method A: Try Ideal Config
                     const stream = await navigator.mediaDevices.getUserMedia(constraints);
                     video.srcObject = stream;
                     video.addEventListener("loadeddata", predictWebcam);
                     debugInfo.innerText = "Webcam active. Show hand.";
+                    document.getElementById('webcam-wrapper').style.display = 'block';
                 } catch (e) {
-                    console.warn("Webcam access denied or not available", e);
-                    debugInfo.innerText = "Camera error: " + e.message;
-                    document.getElementById('webcam-wrapper').style.display = 'none';
+                    // Method B: Fallback to any camera
+                    console.warn("Preferred camera failed, trying fallback...", e);
+                    try {
+                        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        video.srcObject = fallbackStream;
+                        video.addEventListener("loadeddata", predictWebcam);
+                        debugInfo.innerText = "Fallback Webcam active.";
+                        document.getElementById('webcam-wrapper').style.display = 'block';
+                    } catch (err2) {
+                        console.error("All webcam attempts failed", err2);
+                        debugInfo.innerText = "Camera not found. Click to retry.";
+
+                        // Create Retry Button
+                        const retryBtn = document.createElement('button');
+                        retryBtn.innerText = "开启摄像头";
+                        retryBtn.style.position = 'absolute';
+                        retryBtn.style.top = '10px';
+                        retryBtn.style.left = '50%';
+                        retryBtn.style.transform = 'translateX(-50%)';
+                        retryBtn.style.zIndex = '9999';
+                        retryBtn.onclick = () => initMediaPipe();
+                        document.body.appendChild(retryBtn);
+                    }
                 }
+            } else {
+                debugInfo.innerText = "Browser not supported.";
             }
+        }
         }
 
         let lastVideoTime = -1;

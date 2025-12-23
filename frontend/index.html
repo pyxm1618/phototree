@@ -1879,7 +1879,7 @@
             // }
         }
 
-        let deer = null;
+
 
         function initThree() {
             const container = document.getElementById('canvas-container');
@@ -1902,8 +1902,7 @@
             mainGroup = new THREE.Group();
             scene.add(mainGroup);
 
-            // Initialize Deer
-            deer = new ParticleDeer(scene);
+
         }
 
         function setupEnvironment() {
@@ -2790,8 +2789,7 @@
             // 更新雪花
             updateSnow();
 
-            // Update Deer
-            if (deer) deer.update(clock.getElapsedTime());
+
 
             composer.render();
         }

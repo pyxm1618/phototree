@@ -648,6 +648,15 @@ async function executeProfitSharing(transactionId, outTradeNo, referrerCode, tot
             return { success: false, reason: 'amount_too_small' };
         }
 
+        // 3. 校验分账比例上限（微信默认 30%）
+        const MAX_SHARING_RATIO = 0.3;
+        const maxAllowedAmount = Math.floor(totalAmount * MAX_SHARING_RATIO);
+
+        if (sharingAmount > maxAllowedAmount) {
+            console.error(`[ProfitSharing] Amount ${sharingAmount} exceeds max ${maxAllowedAmount} (${MAX_SHARING_RATIO * 100}% of ${totalAmount})`);
+            return { success: false, reason: 'amount_exceeds_limit' };
+        }
+
         console.log(`[ProfitSharing] Sharing ${sharingAmount}分 to ${receiver.receiver_openid} for order ${outTradeNo}`);
 
         // 3. 调用微信分账 API
@@ -664,7 +673,8 @@ async function executeProfitSharing(transactionId, outTradeNo, referrerCode, tot
                 account: receiver.receiver_openid,
                 amount: sharingAmount,
                 description: '邀请返佣'
-            }]
+            }],
+            unfreeze_unsplit: false  // 不解冻剩余资金，允许后续继续分账
         };
 
         const bodyStr = JSON.stringify(requestBody);

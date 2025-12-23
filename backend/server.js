@@ -814,6 +814,7 @@ app.get('/api/dev/check-env', (req, res) => {
 // [DEBUG] Manual DB Init Route
 app.get('/api/dev/init-db', async (req, res) => {
     try {
+        // 1. 创建 users 表
         await db.query(`
           CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
@@ -822,19 +823,75 @@ app.get('/api/dev/init-db', async (req, res) => {
             avatar_url TEXT,
             is_vip INTEGER DEFAULT 0,
             vip_expire_time BIGINT DEFAULT 0,
+            referrer_code TEXT,
+            own_referral_code TEXT,
+            device_type TEXT,
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           );
         `);
-        // Add columns if not exist (for existing tables)
-        try {
-            await db.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS nickname TEXT;");
-            await db.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;");
-        } catch (e) {
-            console.log("Columns likely exist or error ignored:", e.message);
-        }
-        res.send("Database initialized/updated successfully!");
+
+        // 2. 创建 page_views 表
+        await db.query(`
+          CREATE TABLE IF NOT EXISTS page_views (
+            id SERIAL PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            referrer_code TEXT,
+            device_type TEXT,
+            user_agent TEXT,
+            ip_address TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+
+        // 3. 创建 referral_codes 表
+        await db.query(`
+          CREATE TABLE IF NOT EXISTS referral_codes (
+            id SERIAL PRIMARY KEY,
+            code TEXT UNIQUE NOT NULL,
+            owner_name TEXT NOT NULL,
+            owner_contact TEXT,
+            commission_rate DECIMAL(5,2) DEFAULT 10.00,
+            receiver_openid TEXT,
+            sharing_percentage DECIMAL(5,2) DEFAULT 10.00,
+            is_active BOOLEAN DEFAULT true,
+            notes TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+
+        // 4. 创建 profit_sharing_records 表
+        await db.query(`
+          CREATE TABLE IF NOT EXISTS profit_sharing_records (
+            id SERIAL PRIMARY KEY,
+            out_order_no TEXT NOT NULL,
+            transaction_id TEXT,
+            referrer_code TEXT NOT NULL,
+            receiver_openid TEXT NOT NULL,
+            receiver_name TEXT,
+            amount INTEGER NOT NULL,
+            description TEXT,
+            status TEXT DEFAULT 'pending',
+            wechat_order_id TEXT,
+            finish_time BIGINT,
+            error_message TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+
+        // 5. 创建索引
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_pv_session ON page_views(session_id);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_pv_referrer ON page_views(referrer_code);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_pv_created ON page_views(created_at);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_rc_code ON referral_codes(code);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_rc_receiver ON referral_codes(receiver_openid);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_out_order ON profit_sharing_records(out_order_no);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_referrer ON profit_sharing_records(referrer_code);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_status ON profit_sharing_records(status);`);
+
+        console.log('[DB] All tables created/updated successfully');
+        res.send("Database initialized/updated successfully! All tables created.");
     } catch (err) {
-        console.error("Init DB Error:", err);
+        console.error("[DB] Init Error:", err);
         res.status(500).send("Init failed: " + err.message);
     }
 });

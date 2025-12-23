@@ -890,6 +890,57 @@
         .wx-login-benefit-item span {
             color: #d4af37;
         }
+
+        /* --- Mobile Adaptation --- */
+        @media (max-width: 768px) {
+
+            /* 1. Remove self-view camera window */
+            #webcam-wrapper {
+                display: none !important;
+            }
+
+            /* 2. Adapt UI Buttons (Size, Position) */
+            .controls-wrapper {
+                bottom: 100px;
+                /* Move up to avoid overlap with bottom bars */
+                right: 20px;
+                align-items: flex-end;
+                /* Keep aligned to right */
+            }
+
+            .upload-btn,
+            .music-upload-btn {
+                padding: 14px 24px;
+                /* Larger touch target */
+                font-size: 12px;
+                min-width: 140px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                /* Stack vertically on mobile */
+                gap: 15px;
+            }
+
+            #ui-layer h1 {
+                font-size: 4em;
+                /* Smaller title */
+                top: 15%;
+            }
+
+            /* Responsive Login Modal */
+            .wx-login-modal {
+                width: 90%;
+                padding: 20px;
+            }
+
+            #wx-login-container iframe {
+                width: 100% !important;
+                /* Force iframe check */
+                transform: scale(0.9);
+                /* Scale down if needed */
+            }
+        }
     </style>
 </head>
 

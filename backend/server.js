@@ -888,6 +888,28 @@ app.get('/api/dev/init-db', async (req, res) => {
         await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_referrer ON profit_sharing_records(referrer_code);`);
         await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_status ON profit_sharing_records(status);`);
 
+        // 6. 为手机号登录添加字段
+        try {
+            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT UNIQUE;`);
+            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT false;`);
+            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wechat_bound BOOLEAN DEFAULT false;`);
+        } catch (e) { /* ignore if exists */ }
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);`);
+
+        // 7. 创建短信验证码表
+        await db.query(`
+          CREATE TABLE IF NOT EXISTS sms_codes (
+            id SERIAL PRIMARY KEY,
+            phone TEXT NOT NULL,
+            code TEXT NOT NULL,
+            used BOOLEAN DEFAULT false,
+            expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_sms_phone ON sms_codes(phone);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_sms_expires ON sms_codes(expires_at);`);
+
         console.log('[DB] All tables created/updated successfully');
         res.send("Database initialized/updated successfully! All tables created.");
     } catch (err) {
@@ -941,6 +963,217 @@ app.get('/api/dev/check-pay-config', (req, res) => {
 
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// ==================== 手机号登录 API ====================
+
+// 引入短信服务（需要放在文件顶部，但为了减少改动，这里临时处理）
+const smsModule = require('./utils/sms');
+
+/**
+ * @route POST /api/auth/send-code
+ * @desc 发送验证码
+ */
+app.post('/api/auth/send-code', async (req, res) => {
+    try {
+        const { phone } = req.body;
+
+        // 验证手机号格式
+        if (!smsModule.validatePhone(phone)) {
+            return res.status(400).json({ success: false, error: '手机号格式不正确' });
+        }
+
+        // 检查频率限制（60秒内不可重复）
+        const recentCode = await db.query(
+            'SELECT * FROM sms_codes WHERE phone = $1 AND created_at > NOW() - INTERVAL \'60 seconds\' ORDER BY created_at DESC LIMIT 1',
+            [phone]
+        );
+
+        if (recentCode.rows.length > 0) {
+            return res.status(429).json({ success: false, error: '请60秒后再试' });
+        }
+
+        // 生成验证码
+        const code = smsModule.generateCode();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5分钟后过期
+
+        // 发送短信
+        const smsResult = await smsModule.sendVerificationCode(phone, code);
+
+        if (!smsResult.success) {
+            return res.status(500).json({ success: false, error: '短信发送失败: ' + smsResult.message });
+        }
+
+        // 保存验证码
+        await db.query(
+            'INSERT INTO sms_codes (phone, code, expires_at) VALUES ($1, $2, $3)',
+            [phone, code, expiresAt]
+        );
+
+        console.log(`[Auth] Code sent to ${phone}`);
+        res.json({ success: true, message: '验证码已发送', expiresIn: 300 });
+    } catch (err) {
+        console.error('[Auth] Send code error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * @route POST /api/auth/login-phone
+ * @desc 手机号登录
+ */
+app.post('/api/auth/login-phone', async (req, res) => {
+    try {
+        const { phone, code, referrerCode } = req.body;
+
+        if (!phone || !code) {
+            return res.status(400).json({ success: false, error: '手机号和验证码不能为空' });
+        }
+
+        // 验证验证码
+        const codeResult = await db.query(
+            'SELECT * FROM sms_codes WHERE phone = $1 AND code = $2 AND used = false AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1',
+            [phone, code]
+        );
+
+        if (codeResult.rows.length === 0) {
+            return res.status(400).json({ success: false, error: '验证码错误或已过期' });
+        }
+
+        // 标记验证码为已使用
+        await db.query('UPDATE sms_codes SET used = true WHERE id = $1', [codeResult.rows[0].id]);
+
+        // 查询或创建用户
+        let user = await db.query('SELECT * FROM users WHERE phone = $1', [phone]);
+
+        if (user.rows.length === 0) {
+            // 创建新用户
+            const insertResult = await db.query(
+                `INSERT INTO users (phone, phone_verified, referrer_code, device_type, created_at) 
+                 VALUES ($1, true, $2, $3, NOW()) 
+                 RETURNING *`,
+                [phone, referrerCode || null, req.body.deviceType || null]
+            );
+            user = insertResult;
+            console.log(`[Auth] New user created: ${phone}`);
+        } else {
+            // 更新现有用户
+            await db.query('UPDATE users SET phone_verified = true WHERE phone = $1', [phone]);
+
+            // 如果有邀请码且用户还没绑定，则绑定
+            if (referrerCode && !user.rows[0].referrer_code) {
+                await db.query('UPDATE users SET referrer_code = $1 WHERE phone = $2', [referrerCode, phone]);
+            }
+
+            user = await db.query('SELECT * FROM users WHERE phone = $1', [phone]);
+        }
+
+        const userData = user.rows[0];
+
+        // 生成简单的 token（实际应用中应该使用 JWT）
+        const token = Buffer.from(`${phone}:${Date.now()}`).toString('base64');
+
+        console.log(`[Auth] User logged in: ${phone}`);
+        res.json({
+            success: true,
+            token,
+            user: {
+                phone: userData.phone,
+                isVip: userData.is_vip === 1,
+                vipExpireTime: userData.vip_expire_time,
+                wechatBound: userData.wechat_bound || false,
+                nickname: userData.nickname,
+                avatarUrl: userData.avatar_url
+            }
+        });
+    } catch (err) {
+        console.error('[Auth] Login error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * @route POST /api/auth/bind-wechat
+ * @desc 绑定微信（用于分账）
+ */
+app.post('/api/auth/bind-wechat', async (req, res) => {
+    try {
+        const { phone, wechatCode } = req.body;
+
+        if (!phone || !wechatCode) {
+            return res.status(400).json({ success: false, error: '参数不完整' });
+        }
+
+        // 用 wechatCode 换取 OpenID（调用微信 API）
+        const tokenUrl = `https://api.weixin.qq.com/sns/oauth2/access_token?appid=${process.env.WECHAT_APP_ID}&secret=${process.env.WECHAT_APP_SECRET}&code=${wechatCode}&grant_type=authorization_code`;
+        const tokenResp = await axios.get(tokenUrl);
+
+        if (tokenResp.data.errcode) {
+            return res.status(400).json({ success: false, error: '微信授权失败: ' + tokenResp.data.errmsg });
+        }
+
+        const { openid, access_token } = tokenResp.data;
+
+        // 获取用户信息
+        const userInfoUrl = `https://api.weixin.qq.com/sns/userinfo?access_token=${access_token}&openid=${openid}&lang=zh_CN`;
+        const userInfoResp = await axios.get(userInfoUrl);
+
+        const { nickname, headimgurl } = userInfoResp.data;
+
+        // 更新用户表，绑定 OpenID
+        await db.query(
+            'UPDATE users SET openid = $1, nickname = $2, avatar_url = $3, wechat_bound = true WHERE phone = $4',
+            [openid, nickname, headimgurl, phone]
+        );
+
+        console.log(`[Auth] WeChat bound for ${phone}: ${openid}`);
+        res.json({
+            success: true,
+            openid,
+            nickname,
+            avatarUrl: headimgurl
+        });
+    } catch (err) {
+        console.error('[Auth] Bind WeChat error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * @route GET /api/auth/user-info
+ * @desc 获取用户信息
+ */
+app.get('/api/auth/user-info', async (req, res) => {
+    try {
+        const { phone } = req.query;
+
+        if (!phone) {
+            return res.status(400).json({ success: false, error: '缺少phone参数' });
+        }
+
+        const user = await db.query('SELECT * FROM users WHERE phone = $1', [phone]);
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ success: false, error: '用户不存在' });
+        }
+
+        const userData = user.rows[0];
+        res.json({
+            success: true,
+            user: {
+                phone: userData.phone,
+                nickname: userData.nickname,
+                avatarUrl: userData.avatar_url,
+                isVip: userData.is_vip === 1,
+                vipExpireTime: userData.vip_expire_time,
+                wechatBound: userData.wechat_bound || false,
+                referrerCode: userData.referrer_code
+            }
+        });
+    } catch (err) {
+        console.error('[Auth] Get user info error:', err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 

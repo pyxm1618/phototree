@@ -1041,7 +1041,20 @@
             教程
         </div>
 
+
         <button id="btn-login" class="btn-login">微信登录</button>
+
+        <button id="btn-pay" class="btn-login"
+            style="display:none; background:#222; border:1px solid #d4af37; color:#d4af37; margin-left:0; margin-right:10px;">购买
+            Premium</button>
+
+        <div id="user-card" class="user-card" style="display:none">
+            <span id="user-id">游客</span>
+            <span class="vip-badge">Premium</span>
+            <div class="user-dropdown">
+                <div class="user-dropdown-item" id="logout-btn">退出登录</div>
+            </div>
+        </div>
     </div>
 
     <!-- Mobile Bottom Navbar (Only visible on mobile) -->
@@ -1078,19 +1091,6 @@
             <div class="wx-login-benefit-item"><span>✨</span> 尊享沉浸式 3D 圣诞树体验</div>
             <div class="wx-login-benefit-item"><span>🛡️</span> 数据仅保存在您的设备，隐私无忧</div>
         </div>
-    </div>
-
-    <button id="btn-pay" class="btn-login"
-        style="display:none; background:#222; border:1px solid #d4af37; color:#d4af37; margin-left:0; margin-right:10px;">购买
-        Premium</button>
-
-    <div id="user-card" class="user-card" style="display:none">
-        <span id="user-id">游客</span>
-        <span class="vip-badge">Premium</span>
-        <div class="user-dropdown">
-            <div class="user-dropdown-item" id="logout-btn">退出登录</div>
-        </div>
-    </div>
     </div>
 
     <!-- Pay Modal (Redesigned) -->

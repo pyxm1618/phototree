@@ -995,15 +995,15 @@
 
         <div class="controls-wrapper">
             <div class="btn-group">
-                <label class="upload-btn">
+                <div class="upload-btn" id="upload-wrapper">
                     选择文件
-                    <input type="file" id="file-input" multiple accept="image/*">
-                </label>
+                    <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+                </div>
 
-                <label class="music-upload-btn" id="music-upload-label" style="display:none;">
+                <div class="music-upload-btn" id="music-wrapper">
                     🎵 上传音乐
                     <input type="file" id="music-input" accept="audio/*" style="display:none;">
-                </label>
+                </div>
             </div>
             <div class="hint-text">支持批量选择多张照片</div>
         </div>
@@ -1436,8 +1436,10 @@
                     if (qrArea) qrArea.style.display = 'none';
 
                     if (!currentUser) {
-                        alert("请先登录"); // Should not happen as btn is hidden
-                        return;
+                         // Redirect to Login if not logged in (though logic usually prevents this)
+                         const btnLogin = document.getElementById('btn-login');
+                         if(btnLogin) btnLogin.click();
+                         return;
                     }
 
                     try {
@@ -1538,11 +1540,11 @@
             const btnPay = document.getElementById('btn-pay');
             if (btnPay) btnPay.style.display = 'none';
 
-            const uploadBtn = document.querySelector('.controls-wrapper');
-            if (uploadBtn) uploadBtn.style.display = 'none';
-
-            const musicUploadLabel = document.getElementById('music-upload-label');
-            if (musicUploadLabel) musicUploadLabel.style.display = 'none';
+            // Do not hide upload controls on logout, keep them visible so user can click and be prompted to login
+            // const uploadBtn = document.querySelector('.controls-wrapper');
+            // if (uploadBtn) uploadBtn.style.display = 'none';
+            // const musicUploadLabel = document.getElementById('music-upload-label');
+            // if (musicUploadLabel) musicUploadLabel.style.display = 'none';
 
             // Clear photos from scene
             photoMeshGroup.children.forEach(child => {
@@ -1581,18 +1583,18 @@
                 if (userIdSpan) userIdSpan.innerHTML = profileHtml;
 
                 if (user.is_vip) {
-                    // Premium user: show badge, hide pay button, show upload
+                    // Premium user: show badge, hide pay button
                     card.classList.add('vip-active');
                     if (btnPay) btnPay.style.display = 'none';
-                    if (uploadBtn) uploadBtn.style.display = 'flex';
-                    if (musicUploadLabel) musicUploadLabel.style.display = 'flex';
                 } else {
-                    // Non-premium: hide badge, show pay button, hide upload
+                    // Non-premium: hide badge, show pay button
                     card.classList.remove('vip-active');
                     if (btnPay) btnPay.style.display = 'block';
-                    if (uploadBtn) uploadBtn.style.display = 'none';
-                    if (musicUploadLabel) musicUploadLabel.style.display = 'none';
                 }
+                
+                // Upload buttons are now always visible, logic handled on click
+                const uploadBtn = document.querySelector('.controls-wrapper');
+                if (uploadBtn) uploadBtn.style.display = 'block';
             }
 
             // Load user's images

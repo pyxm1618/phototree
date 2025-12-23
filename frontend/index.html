@@ -1436,10 +1436,10 @@
                     if (qrArea) qrArea.style.display = 'none';
 
                     if (!currentUser) {
-                         // Redirect to Login if not logged in (though logic usually prevents this)
-                         const btnLogin = document.getElementById('btn-login');
-                         if(btnLogin) btnLogin.click();
-                         return;
+                        // Redirect to Login if not logged in (though logic usually prevents this)
+                        const btnLogin = document.getElementById('btn-login');
+                        if (btnLogin) btnLogin.click();
+                        return;
                     }
 
                     try {
@@ -1485,6 +1485,59 @@
             /*
             if (confirmPay) { ... }
             */
+
+            // --- Upload Button Logic (Privileged Guard) ---
+            const uploadWrapper = document.getElementById('upload-wrapper');
+            if (uploadWrapper) {
+                uploadWrapper.onclick = () => handlePrivilegedAction('image');
+            }
+
+            const musicWrapper = document.getElementById('music-wrapper');
+            if (musicWrapper) {
+                musicWrapper.onclick = () => handlePrivilegedAction('music');
+            }
+
+            function handlePrivilegedAction(type) {
+                // 1. Check Login
+                if (!currentUser) {
+                    console.log("Action blocked: User not logged in");
+                    // Show Login Modal
+                    const btnLogin = document.getElementById('btn-login');
+                    if (btnLogin) btnLogin.click();
+                    return;
+                }
+
+                // 2. Check VIP
+                if (!currentUser.is_vip) {
+                    console.log("Action blocked: User is not VIP");
+                    // Show Pay Modal
+                    const btnPay = document.getElementById('btn-pay');
+                    if (btnPay) {
+                        btnPay.click();
+                    } else {
+                        // Fallback just in case
+                        const modal = document.getElementById('pay-modal');
+                        const loading = document.getElementById('pay-loading');
+                        const qrArea = document.getElementById('pay-qr-area');
+                        if (modal) modal.style.display = 'flex';
+                        // Since we are bypassing btnPay click, we might need to manually trigger order if we go this route
+                        // But btnPay should exist even if hidden.
+                        // If btnPay is explicitly removed from DOM (less likely), we'd need to duplicate logic or ensure btnPay is always in DOM.
+                        // Current logic hides it via style.display, so click() is safe.
+                    }
+                    return;
+                }
+
+                // 3. Action
+                console.log("Action allowed:", type);
+                if (type === 'image') {
+                    const input = document.getElementById('file-input');
+                    if (input) input.click();
+                } else if (type === 'music') {
+                    const input = document.getElementById('music-input');
+                    if (input) input.click();
+                }
+            }
 
             // Helper: Show Custom Modal
             function showCustomModal(icon, title, msg) {
@@ -1591,7 +1644,7 @@
                     card.classList.remove('vip-active');
                     if (btnPay) btnPay.style.display = 'block';
                 }
-                
+
                 // Upload buttons are now always visible, logic handled on click
                 const uploadBtn = document.querySelector('.controls-wrapper');
                 if (uploadBtn) uploadBtn.style.display = 'block';

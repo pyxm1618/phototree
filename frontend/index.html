@@ -869,14 +869,26 @@
             color: #d4af37;
         }
 
-        .wx-login-title {
+        .wx-login-benefits {
+            margin-top: 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            padding-top: 15px;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .wx-login-benefit-item {
+            color: #ccc;
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+        }
+
+        .wx-login-benefit-item span {
             color: #d4af37;
-            font-family: 'Cinzel', serif;
-            font-size: 20px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -894,8 +906,14 @@
         <div id="wx-login-container">
             <div class="wx-login-close" onclick="document.getElementById('wx-login-container').style.display='none'">×
             </div>
-            <div class="wx-login-title">LOGIN</div>
+            <div class="wx-login-title">开启时光记忆</div>
             <div id="login_container"></div>
+
+            <div class="wx-login-benefits">
+                <div class="wx-login-benefit-item"><span>☁️</span> 登录后永久保存您的专属3D相册</div>
+                <div class="wx-login-benefit-item"><span>📸</span> 解锁照片上传与背景音乐定制</div>
+                <div class="wx-login-benefit-item"><span>🔒</span> 银行级加密，仅您自己可见</div>
+            </div>
         </div>
 
         <button id="btn-pay" class="btn-login"

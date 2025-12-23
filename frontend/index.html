@@ -1024,6 +1024,61 @@
                 font-size: 11px;
                 flex-shrink: 0;
             }
+
+            /* Mobile Bottom Navbar - Fixed & Visible */
+            #mobile-navbar {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 70px;
+                background: linear-gradient(180deg, rgba(10, 15, 25, 0.95) 0%, rgba(5, 10, 20, 0.98) 100%);
+                border-top: 1px solid rgba(212, 175, 55, 0.3);
+                backdrop-filter: blur(10px);
+                z-index: 1000;
+                justify-content: space-around;
+                align-items: center;
+                padding: 0 10px;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            }
+
+            .navbar-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                padding: 8px 12px;
+                border-radius: 8px;
+                transition: all 0.3s;
+                flex: 1;
+                max-width: 80px;
+            }
+
+            .navbar-item:active {
+                transform: scale(0.95);
+                background: rgba(212, 175, 55, 0.1);
+            }
+
+            .navbar-icon {
+                font-size: 24px;
+                margin-bottom: 4px;
+            }
+
+            .navbar-label {
+                font-size: 11px;
+                color: rgba(212, 175, 55, 0.8);
+                font-weight: 500;
+                letter-spacing: 0.5px;
+            }
+
+            /* Hide Desktop Elements on Mobile */
+            .controls-wrapper,
+            .help-btn,
+            .btn-login {
+                display: none !important;
+            }
         }
     </style>
     .modal-icon {
@@ -1418,1388 +1473,1430 @@
         <div class="user-dropdown">
             <div class="user-dropdown-item" id="logout-btn">退出登录</div>
         </div>
-    </div>
-    </div>
+        <!-- Mobile Bottom Navbar (Restored) -->
+        <div id="mobile-navbar">
+            <div class="navbar-item" id="navbar-upload">
+                <div class="navbar-icon">📸</div>
+                <div class="navbar-label">上传照片</div>
+            </div>
+            <div class="navbar-item" id="navbar-music">
+                <div class="navbar-icon">🎵</div>
+                <div class="navbar-label">上传音乐</div>
+            </div>
+            <div class="navbar-item" id="navbar-tutorial">
+                <div class="navbar-icon">📖</div>
+                <div class="navbar-label">教程</div>
+            </div>
+            <div class="navbar-item" id="navbar-profile">
+                <div class="navbar-icon">👤</div>
+                <div class="navbar-label">我的</div>
+            </div>
+        </div>
 
-    <!-- Pay Modal (Redesigned) -->
-    <div id="pay-modal">
-        <div class="pay-content">
-            <div class="close-pay" onclick="this.parentElement.parentElement.style.display='none'">&times;</div>
-            <div class="pay-title">UNLOCK PREMIUM</div>
+        <!-- Pay Modal (Redesigned) -->
+        <div id="pay-modal">
+            <div class="pay-content">
+                <div class="close-pay" onclick="this.parentElement.parentElement.style.display='none'">&times;</div>
+                <div class="pay-title">UNLOCK PREMIUM</div>
 
-            <!-- Loading State -->
-            <div id="pay-loading" style="padding: 40px 0;">
-                <div class="loader-bar-container" style="width:100px; height:2px; margin:0 auto;">
+                <!-- Loading State -->
+                <div id="pay-loading" style="padding: 40px 0;">
+                    <div class="loader-bar-container" style="width:100px; height:2px; margin:0 auto;">
+                        <div class="loader-bar"></div>
+                    </div>
+                    <div style="margin-top:15px; font-size:12px; color:#d4af37; letter-spacing:2px;">正在生成支付订单...</div>
+                </div>
+
+                <!-- QR Code Area (Hidden initially) -->
+                <div id="pay-qr-area" style="display:none; animation: fadeIn 0.5s;">
+                    <div class="pay-price">￥0.01 <span style="font-size:12px; color:#666;">/ 永久解锁</span></div>
+
+                    <div id="qrcode-wrapper">
+                        <div id="qrcode-container"></div>
+                    </div>
+
+                    <div class="pay-benefits">
+                        <div class="benefit-item">无限制照片上传</div>
+                        <div class="benefit-separator">|</div>
+                        <div class="benefit-item">自定义背景音乐</div>
+                        <div class="benefit-separator">|</div>
+                        <div class="benefit-item">尊贵身份标识</div>
+                    </div>
+
+                    <div class="scan-tip">请使用微信扫一扫</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Modal -->
+        <div id="custom-modal">
+            <div class="custom-modal-content">
+                <span class="modal-icon" id="c-modal-icon">✅</span>
+                <div class="modal-title" id="c-modal-title">提示</div>
+                <div class="modal-message" id="c-modal-msg">内容</div>
+                <button class="modal-btn"
+                    onclick="document.getElementById('custom-modal').style.display='none'">确定</button>
+            </div>
+        </div>
+
+        <div id="loader">
+            <div class="loader-content">
+                <div class="loader-title">Christmas Memories</div>
+
+                <!-- Optimized loading text -->
+                <div class="gesture-guide" id="loading-guide">
+
+                    <div class="gesture-item">
+                        <span class="gesture-icon">✊</span>
+                        <div class="gesture-name">握拳</div>
+                        <div class="gesture-desc">照片聚合<br>形成圣诞树</div>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-icon">✌️</span>
+                        <div class="gesture-name">捏合</div>
+                        <div class="gesture-desc">精准聚焦<br>查看单张</div>
+                    </div>
+                    <div class="gesture-item">
+                        <span class="gesture-icon">🖐️</span>
+                        <div class="gesture-name">张开</div>
+                        <div class="gesture-desc">漫天飞舞<br>随机散开</div>
+                    </div>
+                </div>
+
+                <div class="loader-bar-container">
                     <div class="loader-bar"></div>
                 </div>
-                <div style="margin-top:15px; font-size:12px; color:#d4af37; letter-spacing:2px;">正在生成支付订单...</div>
-            </div>
-
-            <!-- QR Code Area (Hidden initially) -->
-            <div id="pay-qr-area" style="display:none; animation: fadeIn 0.5s;">
-                <div class="pay-price">￥0.01 <span style="font-size:12px; color:#666;">/ 永久解锁</span></div>
-
-                <div id="qrcode-wrapper">
-                    <div id="qrcode-container"></div>
-                </div>
-
-                <div class="pay-benefits">
-                    <div class="benefit-item">无限制照片上传</div>
-                    <div class="benefit-separator">|</div>
-                    <div class="benefit-item">自定义背景音乐</div>
-                    <div class="benefit-separator">|</div>
-                    <div class="benefit-item">尊贵身份标识</div>
-                </div>
-
-                <div class="scan-tip">请使用微信扫一扫</div>
+                <div class="loading-text">正在启动沉浸式体验...</div>
             </div>
         </div>
-    </div>
 
-    <!-- Custom Modal -->
-    <div id="custom-modal">
-        <div class="custom-modal-content">
-            <span class="modal-icon" id="c-modal-icon">✅</span>
-            <div class="modal-title" id="c-modal-title">提示</div>
-            <div class="modal-message" id="c-modal-msg">内容</div>
-            <button class="modal-btn" onclick="document.getElementById('custom-modal').style.display='none'">确定</button>
-        </div>
-    </div>
+        <div id="canvas-container"></div>
 
-    <div id="loader">
-        <div class="loader-content">
-            <div class="loader-title">Christmas Memories</div>
+        <div id="ui-layer">
+            <h1>圣诞快乐</h1>
 
-            <!-- Optimized loading text -->
-            <div class="gesture-guide" id="loading-guide">
 
-                <div class="gesture-item">
-                    <span class="gesture-icon">✊</span>
-                    <div class="gesture-name">握拳</div>
-                    <div class="gesture-desc">照片聚合<br>形成圣诞树</div>
+            <div class="controls-wrapper">
+                <div class="btn-group">
+                    <div class="upload-btn" id="upload-wrapper">
+                        选择文件
+                        <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+                    </div>
+
+                    <div class="music-upload-btn" id="music-wrapper">
+                        🎵 上传音乐
+                        <input type="file" id="music-input" accept="audio/*" style="display:none;">
+                    </div>
                 </div>
-                <div class="gesture-item">
-                    <span class="gesture-icon">✌️</span>
-                    <div class="gesture-name">捏合</div>
-                    <div class="gesture-desc">精准聚焦<br>查看单张</div>
-                </div>
-                <div class="gesture-item">
-                    <span class="gesture-icon">🖐️</span>
-                    <div class="gesture-name">张开</div>
-                    <div class="gesture-desc">漫天飞舞<br>随机散开</div>
-                </div>
-            </div>
-
-            <div class="loader-bar-container">
-                <div class="loader-bar"></div>
-            </div>
-            <div class="loading-text">正在启动沉浸式体验...</div>
-        </div>
-    </div>
-
-    <div id="canvas-container"></div>
-
-    <div id="ui-layer">
-        <h1>圣诞快乐</h1>
-
-
-        <div class="controls-wrapper">
-            <div class="btn-group">
-                <div class="upload-btn" id="upload-wrapper">
-                    选择文件
-                    <input type="file" id="file-input" multiple accept="image/*" style="display:none">
-                </div>
-
-                <div class="music-upload-btn" id="music-wrapper">
-                    🎵 上传音乐
-                    <input type="file" id="music-input" accept="audio/*" style="display:none;">
-                </div>
-            </div>
-            <div class="hint-text">支持批量选择多张照片</div>
-        </div>
-    </div>
-
-    <!-- Help Button moved to auth-layer -->
-
-    <!-- Tutorial Modal -->
-    <div id="tutorial-modal">
-        <div class="tutorial-content">
-            <div class="tutorial-close" id="tutorial-close">&times;</div>
-            <div class="tutorial-emoji" id="tutorial-emoji">🎄</div>
-            <div class="tutorial-title" id="tutorial-title">欢迎</div>
-            <div class="tutorial-body" id="tutorial-body">Loading...</div>
-            <div class="tutorial-buttons">
-                <button class="tutorial-btn tutorial-btn-secondary" id="tutorial-skip">跳过</button>
-                <button class="tutorial-btn" id="tutorial-next">下一步</button>
-            </div>
-            <div class="tutorial-progress">
-                <div class="tutorial-dot active"></div>
-                <div class="tutorial-dot"></div>
-                <div class="tutorial-dot"></div>
-                <div class="tutorial-dot"></div>
+                <div class="hint-text">支持批量选择多张照片</div>
             </div>
         </div>
-    </div>
 
-    <div id="webcam-wrapper">
-        <video id="webcam" autoplay playsinline></video>
-        <div id="debug-info">Initializing...</div>
-        <canvas id="webcam-preview" style="display:none;"></canvas>
-    </div>
+        <!-- Help Button moved to auth-layer -->
 
-    <!-- Custom Background Music -->
-    <audio id="bgm" loop>
-        <source src="./music.mp3" type="audio/mpeg">
-    </audio>
+        <!-- Tutorial Modal -->
+        <div id="tutorial-modal">
+            <div class="tutorial-content">
+                <div class="tutorial-close" id="tutorial-close">&times;</div>
+                <div class="tutorial-emoji" id="tutorial-emoji">🎄</div>
+                <div class="tutorial-title" id="tutorial-title">欢迎</div>
+                <div class="tutorial-body" id="tutorial-body">Loading...</div>
+                <div class="tutorial-buttons">
+                    <button class="tutorial-btn tutorial-btn-secondary" id="tutorial-skip">跳过</button>
+                    <button class="tutorial-btn" id="tutorial-next">下一步</button>
+                </div>
+                <div class="tutorial-progress">
+                    <div class="tutorial-dot active"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                    <div class="tutorial-dot"></div>
+                </div>
+            </div>
+        </div>
 
-    <div id="music-btn" class="music-btn" title="Toggle Music">
-        <span id="music-icon" class="slashed-icon">🎵</span>
-    </div>
+        <div id="webcam-wrapper">
+            <video id="webcam" autoplay playsinline></video>
+            <div id="debug-info">Initializing...</div>
+            <canvas id="webcam-preview" style="display:none;"></canvas>
+        </div>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-        import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+        <!-- Custom Background Music -->
+        <audio id="bgm" loop>
+            <source src="./music.mp3" type="audio/mpeg">
+        </audio>
 
-        // Custom Modules (Inlined to avoid Vercel module loading issues)
-        const API_BASE = '';
-        const API = {
-            async checkHealth() {
-                try {
-                    await fetch(`${API_BASE}/`);
-                    return true;
-                } catch (e) {
-                    console.warn("Backend not reachable");
-                    return false;
+        <div id="music-btn" class="music-btn" title="Toggle Music">
+            <span id="music-icon" class="slashed-icon">🎵</span>
+        </div>
+
+        <script type="module">
+            import * as THREE from 'three';
+            import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+            import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+            import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+            import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+            import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+            import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+
+            // Custom Modules (Inlined to avoid Vercel module loading issues)
+            const API_BASE = '';
+            const API = {
+                async checkHealth() {
+                    try {
+                        await fetch(`${API_BASE}/`);
+                        return true;
+                    } catch (e) {
+                        console.warn("Backend not reachable");
+                        return false;
+                    }
+                },
+                async login(code = null) {
+                    const mockCode = code || 'dev_code_' + Math.random().toString(36).substr(2, 9);
+                    try {
+                        const res = await fetch(`${API_BASE}/api/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code: mockCode })
+                        });
+                        return await res.json();
+                    } catch (e) {
+                        console.error("Login failed", e);
+                        throw e;
+                    }
+                },
+                async createOrder(openid) {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/pay/create-order`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ openid })
+                        });
+                        return await res.json();
+                    } catch (e) {
+                        console.error("Create order failed", e);
+                        throw e;
+                    }
+                },
+                async devForceVip(openid) {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/dev/force-vip`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ openid })
+                        });
+                        return await res.json();
+                    } catch (e) {
+                        console.error("Force VIP failed", e);
+                        throw e;
+                    }
+                },
+                async getUser(openid) {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/user/${openid}`);
+                        return await res.json();
+                    } catch (e) {
+                        console.error("Get user failed", e);
+                        throw e;
+                    }
                 }
-            },
-            async login(code = null) {
-                const mockCode = code || 'dev_code_' + Math.random().toString(36).substr(2, 9);
-                try {
-                    const res = await fetch(`${API_BASE}/api/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code: mockCode })
+            };
+
+            const STORE_KEY_PREFIX_IMAGES = 'user_images_';
+            const STORE_KEY_PREFIX_MUSIC = 'user_music_';
+            const STORE_KEY_PREFIX_TUTORIAL = 'tutorial_seen_';
+            const Storage = {
+                async init() {
+                    if (!window.localforage) {
+                        console.error("LocalForage not found!");
+                        return;
+                    }
+                    localforage.config({
+                        name: 'ParticleSaaS',
+                        storeName: 'images_db'
                     });
-                    return await res.json();
-                } catch (e) {
-                    console.error("Login failed", e);
-                    throw e;
+                },
+                async saveImages(openid, fileDataArray) {
+                    if (!openid) return;
+                    const key = `${STORE_KEY_PREFIX_IMAGES}${openid}`;
+                    try {
+                        await localforage.setItem(key, fileDataArray);
+                        console.log(`Saved ${fileDataArray.length} images for user ${openid}`);
+                    } catch (e) {
+                        console.error("Failed to save images", e);
+                    }
+                },
+                async loadImages(openid) {
+                    if (!openid) return [];
+                    const key = `${STORE_KEY_PREFIX_IMAGES}${openid}`;
+                    try {
+                        const images = await localforage.getItem(key);
+                        return images || [];
+                    } catch (e) {
+                        console.error("Failed to load images", e);
+                        return [];
+                    }
+                },
+                async clearImages(openid) {
+                    if (!openid) return;
+                    const key = `${STORE_KEY_PREFIX_IMAGES}${openid}`;
+                    try {
+                        await localforage.removeItem(key);
+                        console.log(`Cleared images for user ${openid}`);
+                    } catch (e) {
+                        console.error("Failed to clear images", e);
+                    }
+                },
+                async saveMusic(openid, musicBlob) {
+                    if (!openid || !musicBlob) return;
+                    const key = `${STORE_KEY_PREFIX_MUSIC}${openid}`;
+                    try {
+                        await localforage.setItem(key, musicBlob);
+                        console.log(`Saved music for user ${openid}`);
+                    } catch (e) {
+                        console.error("Failed to save music", e);
+                    }
+                },
+                async loadMusic(openid) {
+                    if (!openid) return null;
+                    const key = `${STORE_KEY_PREFIX_MUSIC}${openid}`;
+                    try {
+                        return await localforage.getItem(key);
+                    } catch (e) {
+                        console.error("Failed to load music", e);
+                        return null;
+                    }
+                },
+                async clearMusic(openid) {
+                    if (!openid) return;
+                    const key = `${STORE_KEY_PREFIX_MUSIC}${openid}`;
+                    try {
+                        await localforage.removeItem(key);
+                        console.log(`Cleared music for user ${openid}`);
+                    } catch (e) {
+                        console.error("Failed to clear music", e);
+                    }
+                },
+                async setTutorialSeen(openid) {
+                    if (!openid) return;
+                    const key = `${STORE_KEY_PREFIX_TUTORIAL}${openid}`;
+                    await localforage.setItem(key, true);
+                },
+                async hasTutorialSeen(openid) {
+                    if (!openid) return false;
+                    const key = `${STORE_KEY_PREFIX_TUTORIAL}${openid}`;
+                    return await localforage.getItem(key) || false;
                 }
-            },
-            async createOrder(openid) {
-                try {
-                    const res = await fetch(`${API_BASE}/api/pay/create-order`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ openid })
-                    });
-                    return await res.json();
-                } catch (e) {
-                    console.error("Create order failed", e);
-                    throw e;
+            };
+
+            // --- 核心配置 ---
+            const CONFIG = {
+                colors: {
+                    bg: 0x050d1a, // 修改：深邃午夜蓝 (Midnight Blue)
+                    fog: 0x050d1a,
+                    champagneGold: 0xffd966,
+                    deepGreen: 0x03180a,
+                    accentRed: 0x990000,
+                },
+                particles: {
+                    count: 1500,
+                    dustCount: 2000,
+                    snowCount: 1000, // 新增：雪花数量
+                    treeHeight: 24,
+                    treeRadius: 8
+                },
+                camera: { z: 50 },
+
+                preload: {
+                    autoScanLocal: true,
+                    scanCount: 200,
+                    images: [
+                        'https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=600',
+                        'https://images.unsplash.com/photo-1576919228236-a097c32a5cd4?q=80&w=600',
+                        'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=600',
+                        'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=600'
+                    ]
                 }
-            },
-            async devForceVip(openid) {
-                try {
-                    const res = await fetch(`${API_BASE}/api/dev/force-vip`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ openid })
-                    });
-                    return await res.json();
-                } catch (e) {
-                    console.error("Force VIP failed", e);
-                    throw e;
-                }
-            },
-            async getUser(openid) {
-                try {
-                    const res = await fetch(`${API_BASE}/api/user/${openid}`);
-                    return await res.json();
-                } catch (e) {
-                    console.error("Get user failed", e);
-                    throw e;
-                }
+            };
+
+            const STATE = {
+                mode: 'TREE',
+                focusIndex: -1,
+                focusTarget: null,
+                hand: { detected: false, x: 0, y: 0 },
+                rotation: { x: 0, y: 0 }
+            };
+
+            let scene, camera, renderer, composer;
+            let mainGroup;
+            let clock = new THREE.Clock();
+            let particleSystem = [];
+            let photoMeshGroup = new THREE.Group();
+            let handLandmarker, video;
+            let caneTexture;
+            let snowSystem; // 新增：雪花系统
+            const debugInfo = document.getElementById('debug-info');
+
+            let currentUser = null;
+
+            async function init() {
+                // SaaS Initialization
+                await Storage.init();
+                await setupAuthUI();
+
+                initThree();
+                setupEnvironment();
+                setupLights();
+                createTextures();
+                createParticles();
+                createDust();
+                createSnow();
+
+                setupPostProcessing();
+                setupEvents();
+                await initMediaPipe();
+
+                const loader = document.getElementById('loader');
+                loader.style.opacity = 0;
+                setTimeout(() => loader.remove(), 800);
+
+                animate();
             }
-        };
 
-        const STORE_KEY_PREFIX_IMAGES = 'user_images_';
-        const STORE_KEY_PREFIX_MUSIC = 'user_music_';
-        const STORE_KEY_PREFIX_TUTORIAL = 'tutorial_seen_';
-        const Storage = {
-            async init() {
-                if (!window.localforage) {
-                    console.error("LocalForage not found!");
-                    return;
+            // --- SaaS Logic ---
+            async function setupAuthUI() {
+                const btnLogin = document.getElementById('btn-login');
+                const btnPay = document.getElementById('btn-pay');
+                const confirmPay = document.getElementById('confirm-pay');
+
+                // Music Elements
+                const musicBtn = document.getElementById('music-btn');
+                const musicIcon = document.getElementById('music-icon');
+                const bgm = document.getElementById('bgm');
+
+                // Music Handler
+                let isMusicPlaying = false;
+                if (bgm) bgm.volume = 0.5;
+
+                // Auto-play Logic
+                async function tryAutoPlay() {
+                    try {
+                        await bgm.play();
+                        isMusicPlaying = true;
+                        musicBtn.classList.add('music-active');
+                        if (musicIcon) musicIcon.innerText = '🎵';
+                        musicBtn.style.animation = 'pulse-music 2s infinite';
+                    } catch (e) {
+                        // Auto-play blocked, wait for user interaction
+                        document.addEventListener('click', function enableAudio() {
+                            if (!isMusicPlaying) {
+                                bgm.play().then(() => {
+                                    isMusicPlaying = true;
+                                    musicBtn.classList.add('music-active');
+                                    if (musicIcon) musicIcon.innerText = '🎵';
+                                    musicBtn.style.animation = 'pulse-music 2s infinite';
+                                }).catch(() => { });
+                            }
+                            document.removeEventListener('click', enableAudio);
+                        }, { once: true });
+                    }
                 }
-                localforage.config({
-                    name: 'ParticleSaaS',
-                    storeName: 'images_db'
-                });
-            },
-            async saveImages(openid, fileDataArray) {
-                if (!openid) return;
-                const key = `${STORE_KEY_PREFIX_IMAGES}${openid}`;
-                try {
-                    await localforage.setItem(key, fileDataArray);
-                    console.log(`Saved ${fileDataArray.length} images for user ${openid}`);
-                } catch (e) {
-                    console.error("Failed to save images", e);
-                }
-            },
-            async loadImages(openid) {
-                if (!openid) return [];
-                const key = `${STORE_KEY_PREFIX_IMAGES}${openid}`;
-                try {
-                    const images = await localforage.getItem(key);
-                    return images || [];
-                } catch (e) {
-                    console.error("Failed to load images", e);
-                    return [];
-                }
-            },
-            async clearImages(openid) {
-                if (!openid) return;
-                const key = `${STORE_KEY_PREFIX_IMAGES}${openid}`;
-                try {
-                    await localforage.removeItem(key);
-                    console.log(`Cleared images for user ${openid}`);
-                } catch (e) {
-                    console.error("Failed to clear images", e);
-                }
-            },
-            async saveMusic(openid, musicBlob) {
-                if (!openid || !musicBlob) return;
-                const key = `${STORE_KEY_PREFIX_MUSIC}${openid}`;
-                try {
-                    await localforage.setItem(key, musicBlob);
-                    console.log(`Saved music for user ${openid}`);
-                } catch (e) {
-                    console.error("Failed to save music", e);
-                }
-            },
-            async loadMusic(openid) {
-                if (!openid) return null;
-                const key = `${STORE_KEY_PREFIX_MUSIC}${openid}`;
-                try {
-                    return await localforage.getItem(key);
-                } catch (e) {
-                    console.error("Failed to load music", e);
-                    return null;
-                }
-            },
-            async clearMusic(openid) {
-                if (!openid) return;
-                const key = `${STORE_KEY_PREFIX_MUSIC}${openid}`;
-                try {
-                    await localforage.removeItem(key);
-                    console.log(`Cleared music for user ${openid}`);
-                } catch (e) {
-                    console.error("Failed to clear music", e);
-                }
-            },
-            async setTutorialSeen(openid) {
-                if (!openid) return;
-                const key = `${STORE_KEY_PREFIX_TUTORIAL}${openid}`;
-                await localforage.setItem(key, true);
-            },
-            async hasTutorialSeen(openid) {
-                if (!openid) return false;
-                const key = `${STORE_KEY_PREFIX_TUTORIAL}${openid}`;
-                return await localforage.getItem(key) || false;
-            }
-        };
+                if (bgm) tryAutoPlay();
 
-        // --- 核心配置 ---
-        const CONFIG = {
-            colors: {
-                bg: 0x050d1a, // 修改：深邃午夜蓝 (Midnight Blue)
-                fog: 0x050d1a,
-                champagneGold: 0xffd966,
-                deepGreen: 0x03180a,
-                accentRed: 0x990000,
-            },
-            particles: {
-                count: 1500,
-                dustCount: 2000,
-                snowCount: 1000, // 新增：雪花数量
-                treeHeight: 24,
-                treeRadius: 8
-            },
-            camera: { z: 50 },
+                if (musicBtn && bgm) {
+                    musicBtn.onclick = async () => {
+                        if (musicBtn.dataset.busy === "true") return;
+                        musicBtn.dataset.busy = "true";
 
-            preload: {
-                autoScanLocal: true,
-                scanCount: 200,
-                images: [
-                    'https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=600',
-                    'https://images.unsplash.com/photo-1576919228236-a097c32a5cd4?q=80&w=600',
-                    'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=600',
-                    'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=600'
-                ]
-            }
-        };
-
-        const STATE = {
-            mode: 'TREE',
-            focusIndex: -1,
-            focusTarget: null,
-            hand: { detected: false, x: 0, y: 0 },
-            rotation: { x: 0, y: 0 }
-        };
-
-        let scene, camera, renderer, composer;
-        let mainGroup;
-        let clock = new THREE.Clock();
-        let particleSystem = [];
-        let photoMeshGroup = new THREE.Group();
-        let handLandmarker, video;
-        let caneTexture;
-        let snowSystem; // 新增：雪花系统
-        const debugInfo = document.getElementById('debug-info');
-
-        let currentUser = null;
-
-        async function init() {
-            // SaaS Initialization
-            await Storage.init();
-            await setupAuthUI();
-
-            initThree();
-            setupEnvironment();
-            setupLights();
-            createTextures();
-            createParticles();
-            createDust();
-            createSnow();
-
-            setupPostProcessing();
-            setupEvents();
-            await initMediaPipe();
-
-            const loader = document.getElementById('loader');
-            loader.style.opacity = 0;
-            setTimeout(() => loader.remove(), 800);
-
-            animate();
-        }
-
-        // --- SaaS Logic ---
-        async function setupAuthUI() {
-            const btnLogin = document.getElementById('btn-login');
-            const btnPay = document.getElementById('btn-pay');
-            const confirmPay = document.getElementById('confirm-pay');
-
-            // Music Elements
-            const musicBtn = document.getElementById('music-btn');
-            const musicIcon = document.getElementById('music-icon');
-            const bgm = document.getElementById('bgm');
-
-            // Music Handler
-            let isMusicPlaying = false;
-            if (bgm) bgm.volume = 0.5;
-
-            // Auto-play Logic
-            async function tryAutoPlay() {
-                try {
-                    await bgm.play();
-                    isMusicPlaying = true;
-                    musicBtn.classList.add('music-active');
-                    if (musicIcon) musicIcon.innerText = '🎵';
-                    musicBtn.style.animation = 'pulse-music 2s infinite';
-                } catch (e) {
-                    // Auto-play blocked, wait for user interaction
-                    document.addEventListener('click', function enableAudio() {
-                        if (!isMusicPlaying) {
-                            bgm.play().then(() => {
+                        try {
+                            if (isMusicPlaying) {
+                                bgm.pause();
+                                isMusicPlaying = false;
+                                musicBtn.classList.remove('music-active');
+                                if (musicIcon) {
+                                    musicIcon.innerText = '🎵';
+                                    musicIcon.classList.add('slashed-icon'); // Slashed note for "Music Off"
+                                }
+                                musicBtn.style.background = 'rgba(255, 0, 0, 0.3)';
+                                musicBtn.style.borderColor = 'rgba(255, 0, 0, 0.5)';
+                                musicBtn.style.animation = 'none';
+                            } else {
+                                await bgm.play();
                                 isMusicPlaying = true;
                                 musicBtn.classList.add('music-active');
-                                if (musicIcon) musicIcon.innerText = '🎵';
+                                if (musicIcon) {
+                                    musicIcon.innerText = '🎵'; // Normal note for "Music On"
+                                    musicIcon.classList.remove('slashed-icon');
+                                }
+                                musicBtn.style.background = 'rgba(0, 0, 0, 0.5)';
+                                musicBtn.style.borderColor = 'rgba(212, 175, 55, 0.4)';
                                 musicBtn.style.animation = 'pulse-music 2s infinite';
-                            }).catch(() => { });
+                            }
+                        } catch (e) {
+                            console.error("Audio play failed", e);
+                            if (e.name === 'NotAllowedError') {
+                                alert("请先在页面上点击任意位置以启用音频。");
+                            }
+                        } finally {
+                            musicBtn.dataset.busy = "false";
                         }
-                        document.removeEventListener('click', enableAudio);
-                    }, { once: true });
+                    };
                 }
-            }
-            if (bgm) tryAutoPlay();
 
-            if (musicBtn && bgm) {
-                musicBtn.onclick = async () => {
-                    if (musicBtn.dataset.busy === "true") return;
-                    musicBtn.dataset.busy = "true";
+                // Login Handler
+                // Login Handler (Website QR Code)
+                if (btnLogin) {
+                    btnLogin.onclick = () => {
+                        const container = document.getElementById('wx-login-container');
+                        if (container) {
+                            container.style.display = 'block';
+                            container.classList.add('wx-login-modal'); // Add the new class
+                            // Initialize WxLogin
+                            // Need to clear previous iframe if any
+                            const inner = document.getElementById('login_container');
+                            inner.innerHTML = '';
 
+                            // Data URI CSS to style the iframe content (Hide title, transparent bg)
+                            // Note: WeChat might sanitize this, but standard practice is to use href.
+                            // We try to make it look cleaner.
+                            // Background transparent, text light.
+                            const customCss = "data:text/css;base64,LmltcG93ZXJCb3ggLnFyY29kZSB7d2lkdGg6IDIwMHB4O30KLmltcG93ZXJCb3ggLnRpdGxlIHtkaXNwbGF5OiBub25lO30KLmltcG93ZXJCb3ggLmluZm8ge2Rpc3BsYXk6IG5vbmU7fQ0KLmltcG93ZXJCb3ggLnN0YXR1cyB7Y29sb3I6ICNjY2M7fQ==";
+
+                            new WxLogin({
+                                self_redirect: false,
+                                id: "login_container",
+                                appid: "wxb243ed29b96f8a49",
+                                scope: "snsapi_login",
+                                redirect_uri: encodeURIComponent("https://aiguess.cn/api/callback/wechat"),
+                                state: Math.random().toString(36).substr(2),
+                                style: "black",
+                                href: customCss
+                            });
+                        }
+                    };
+                }
+
+                // Check for Login Callback (URL Params)
+                const urlParams = new URLSearchParams(window.location.search);
+                // Check for Login Errors (URL Params)
+                if (urlParams.get('error')) {
+                    const errType = urlParams.get('error');
+                    const errMsg = urlParams.get('msg') || 'Unknown error';
+                    alert(`登录失败: ${errType}\n详细信息: ${errMsg}\n请检查控制台或联系管理员(Env Var mismatch?)`);
+                    // Clear URL but keep error visible in alert
+                    window.history.replaceState({}, document.title, "/");
+                }
+
+                // Check for Login Callback (URL Params)
+                if (urlParams.get('login_success') === 'true' && urlParams.get('openid')) {
+                    const openid = urlParams.get('openid');
+                    // Clean URL
+                    window.history.replaceState({}, document.title, "/");
+
+                    // Retrieve user info (awaiting this to ensure currentUser is set)
                     try {
-                        if (isMusicPlaying) {
-                            bgm.pause();
-                            isMusicPlaying = false;
-                            musicBtn.classList.remove('music-active');
-                            if (musicIcon) {
-                                musicIcon.innerText = '🎵';
-                                musicIcon.classList.add('slashed-icon'); // Slashed note for "Music Off"
-                            }
-                            musicBtn.style.background = 'rgba(255, 0, 0, 0.3)';
-                            musicBtn.style.borderColor = 'rgba(255, 0, 0, 0.5)';
-                            musicBtn.style.animation = 'none';
+                        const res = await API.getUser(openid);
+                        if (res.success) {
+                            handleLoginSuccess(res.user);
                         } else {
-                            await bgm.play();
-                            isMusicPlaying = true;
-                            musicBtn.classList.add('music-active');
-                            if (musicIcon) {
-                                musicIcon.innerText = '🎵'; // Normal note for "Music On"
-                                musicIcon.classList.remove('slashed-icon');
-                            }
-                            musicBtn.style.background = 'rgba(0, 0, 0, 0.5)';
-                            musicBtn.style.borderColor = 'rgba(212, 175, 55, 0.4)';
-                            musicBtn.style.animation = 'pulse-music 2s infinite';
+                            showCustomModal('⚠️', '获取信息失败', JSON.stringify(res));
+                            console.error("User fetch success=false", res);
                         }
                     } catch (e) {
-                        console.error("Audio play failed", e);
-                        if (e.name === 'NotAllowedError') {
-                            alert("请先在页面上点击任意位置以启用音频。");
-                        }
-                    } finally {
-                        musicBtn.dataset.busy = "false";
+                        console.error("Failed to load user after callback", e);
+                        showCustomModal('⚠️', '登录异常', "API Error - " + e.message);
                     }
-                };
-            }
-
-            // Login Handler
-            // Login Handler (Website QR Code)
-            if (btnLogin) {
-                btnLogin.onclick = () => {
-                    const container = document.getElementById('wx-login-container');
-                    if (container) {
-                        container.style.display = 'block';
-                        container.classList.add('wx-login-modal'); // Add the new class
-                        // Initialize WxLogin
-                        // Need to clear previous iframe if any
-                        const inner = document.getElementById('login_container');
-                        inner.innerHTML = '';
-
-                        // Data URI CSS to style the iframe content (Hide title, transparent bg)
-                        // Note: WeChat might sanitize this, but standard practice is to use href.
-                        // We try to make it look cleaner.
-                        // Background transparent, text light.
-                        const customCss = "data:text/css;base64,LmltcG93ZXJCb3ggLnFyY29kZSB7d2lkdGg6IDIwMHB4O30KLmltcG93ZXJCb3ggLnRpdGxlIHtkaXNwbGF5OiBub25lO30KLmltcG93ZXJCb3ggLmluZm8ge2Rpc3BsYXk6IG5vbmU7fQ0KLmltcG93ZXJCb3ggLnN0YXR1cyB7Y29sb3I6ICNjY2M7fQ==";
-
-                        new WxLogin({
-                            self_redirect: false,
-                            id: "login_container",
-                            appid: "wxb243ed29b96f8a49",
-                            scope: "snsapi_login",
-                            redirect_uri: encodeURIComponent("https://aiguess.cn/api/callback/wechat"),
-                            state: Math.random().toString(36).substr(2),
-                            style: "black",
-                            href: customCss
-                        });
-                    }
-                };
-            }
-
-            // Check for Login Callback (URL Params)
-            const urlParams = new URLSearchParams(window.location.search);
-            // Check for Login Errors (URL Params)
-            if (urlParams.get('error')) {
-                const errType = urlParams.get('error');
-                const errMsg = urlParams.get('msg') || 'Unknown error';
-                alert(`登录失败: ${errType}\n详细信息: ${errMsg}\n请检查控制台或联系管理员(Env Var mismatch?)`);
-                // Clear URL but keep error visible in alert
-                window.history.replaceState({}, document.title, "/");
-            }
-
-            // Check for Login Callback (URL Params)
-            if (urlParams.get('login_success') === 'true' && urlParams.get('openid')) {
-                const openid = urlParams.get('openid');
-                // Clean URL
-                window.history.replaceState({}, document.title, "/");
-
-                // Retrieve user info (awaiting this to ensure currentUser is set)
-                try {
-                    const res = await API.getUser(openid);
-                    if (res.success) {
-                        handleLoginSuccess(res.user);
-                    } else {
-                        showCustomModal('⚠️', '获取信息失败', JSON.stringify(res));
-                        console.error("User fetch success=false", res);
-                    }
-                } catch (e) {
-                    console.error("Failed to load user after callback", e);
-                    showCustomModal('⚠️', '登录异常', "API Error - " + e.message);
                 }
-            }
 
-            // Pay Handler (Auto Trigger)
-            if (btnPay) {
-                btnPay.onclick = async () => {
-                    const modal = document.getElementById('pay-modal');
-                    const loading = document.getElementById('pay-loading');
-                    const qrArea = document.getElementById('pay-qr-area');
+                // Pay Handler (Auto Trigger)
+                if (btnPay) {
+                    btnPay.onclick = async () => {
+                        const modal = document.getElementById('pay-modal');
+                        const loading = document.getElementById('pay-loading');
+                        const qrArea = document.getElementById('pay-qr-area');
 
-                    if (modal) modal.style.display = 'flex';
-                    if (loading) loading.style.display = 'block';
-                    if (qrArea) qrArea.style.display = 'none';
+                        if (modal) modal.style.display = 'flex';
+                        if (loading) loading.style.display = 'block';
+                        if (qrArea) qrArea.style.display = 'none';
 
+                        if (!currentUser) {
+                            // Redirect to Login if not logged in (though logic usually prevents this)
+                            const btnLogin = document.getElementById('btn-login');
+                            if (btnLogin) btnLogin.click();
+                            return;
+                        }
+
+                        try {
+                            const orderRes = await API.createOrder(currentUser.openid);
+                            if (orderRes.success && orderRes.codeUrl) {
+                                if (loading) loading.style.display = 'none';
+                                if (qrArea) qrArea.style.display = 'block';
+
+                                const qrContainer = document.getElementById('qrcode-container');
+                                if (qrContainer) {
+                                    qrContainer.innerHTML = "";
+                                    new QRCode(qrContainer, {
+                                        text: orderRes.codeUrl,
+                                        width: 180,
+                                        height: 180,
+                                        colorDark: "#000000",
+                                        colorLight: "#ffffff",
+                                        correctLevel: QRCode.CorrectLevel.H
+                                    });
+                                }
+
+                                // Start Polling
+                                const pollInterval = setInterval(async () => {
+                                    const isPaid = await checkPaymentStatus();
+                                    if (isPaid) clearInterval(pollInterval);
+                                    // Stop polling if modal closed? ideal but ok for now
+                                }, 3000);
+
+                            } else {
+                                const errorDetails = orderRes.details ? JSON.stringify(orderRes.details, null, 2) : (orderRes.error || "Unknown Error");
+                                showCustomModal('⚠️', '订单创建失败', errorDetails);
+                                if (modal) modal.style.display = 'none';
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            showCustomModal('⚠️', '网络错误', "无法连接服务器");
+                            if (modal) modal.style.display = 'none';
+                        }
+                    };
+                }
+
+                // Remove old confirmPay Logic since we auto-trigger
+                /*
+                if (confirmPay) { ... }
+                */
+
+                // --- Upload Button Logic (Privileged Guard) ---
+                const uploadWrapper = document.getElementById('upload-wrapper');
+                if (uploadWrapper) {
+                    uploadWrapper.onclick = () => handlePrivilegedAction('image');
+                }
+
+                const musicWrapper = document.getElementById('music-wrapper');
+                if (musicWrapper) {
+                    musicWrapper.onclick = () => handlePrivilegedAction('music');
+                }
+
+                function handlePrivilegedAction(type) {
+                    // 1. Check Login
                     if (!currentUser) {
-                        // Redirect to Login if not logged in (though logic usually prevents this)
+                        console.log("Action blocked: User not logged in");
+                        // Show Login Modal
                         const btnLogin = document.getElementById('btn-login');
                         if (btnLogin) btnLogin.click();
                         return;
                     }
 
-                    try {
-                        const orderRes = await API.createOrder(currentUser.openid);
-                        if (orderRes.success && orderRes.codeUrl) {
-                            if (loading) loading.style.display = 'none';
-                            if (qrArea) qrArea.style.display = 'block';
-
-                            const qrContainer = document.getElementById('qrcode-container');
-                            if (qrContainer) {
-                                qrContainer.innerHTML = "";
-                                new QRCode(qrContainer, {
-                                    text: orderRes.codeUrl,
-                                    width: 180,
-                                    height: 180,
-                                    colorDark: "#000000",
-                                    colorLight: "#ffffff",
-                                    correctLevel: QRCode.CorrectLevel.H
-                                });
-                            }
-
-                            // Start Polling
-                            const pollInterval = setInterval(async () => {
-                                const isPaid = await checkPaymentStatus();
-                                if (isPaid) clearInterval(pollInterval);
-                                // Stop polling if modal closed? ideal but ok for now
-                            }, 3000);
-
+                    // 2. Check VIP
+                    if (!currentUser.is_vip) {
+                        console.log("Action blocked: User is not VIP");
+                        // Show Pay Modal
+                        const btnPay = document.getElementById('btn-pay');
+                        if (btnPay) {
+                            btnPay.click();
                         } else {
-                            const errorDetails = orderRes.details ? JSON.stringify(orderRes.details, null, 2) : (orderRes.error || "Unknown Error");
-                            showCustomModal('⚠️', '订单创建失败', errorDetails);
-                            if (modal) modal.style.display = 'none';
+                            // Fallback just in case
+                            const modal = document.getElementById('pay-modal');
+                            const loading = document.getElementById('pay-loading');
+                            const qrArea = document.getElementById('pay-qr-area');
+                            if (modal) modal.style.display = 'flex';
+                            // Since we are bypassing btnPay click, we might need to manually trigger order if we go this route
+                            // But btnPay should exist even if hidden.
+                            // If btnPay is explicitly removed from DOM (less likely), we'd need to duplicate logic or ensure btnPay is always in DOM.
+                            // Current logic hides it via style.display, so click() is safe.
                         }
-                    } catch (e) {
-                        console.error(e);
-                        showCustomModal('⚠️', '网络错误', "无法连接服务器");
-                        if (modal) modal.style.display = 'none';
+                        return;
                     }
-                };
-            }
 
-            // Remove old confirmPay Logic since we auto-trigger
-            /*
-            if (confirmPay) { ... }
-            */
-
-            // --- Upload Button Logic (Privileged Guard) ---
-            const uploadWrapper = document.getElementById('upload-wrapper');
-            if (uploadWrapper) {
-                uploadWrapper.onclick = () => handlePrivilegedAction('image');
-            }
-
-            const musicWrapper = document.getElementById('music-wrapper');
-            if (musicWrapper) {
-                musicWrapper.onclick = () => handlePrivilegedAction('music');
-            }
-
-            function handlePrivilegedAction(type) {
-                // 1. Check Login
-                if (!currentUser) {
-                    console.log("Action blocked: User not logged in");
-                    // Show Login Modal
-                    const btnLogin = document.getElementById('btn-login');
-                    if (btnLogin) btnLogin.click();
-                    return;
-                }
-
-                // 2. Check VIP
-                if (!currentUser.is_vip) {
-                    console.log("Action blocked: User is not VIP");
-                    // Show Pay Modal
-                    const btnPay = document.getElementById('btn-pay');
-                    if (btnPay) {
-                        btnPay.click();
-                    } else {
-                        // Fallback just in case
-                        const modal = document.getElementById('pay-modal');
-                        const loading = document.getElementById('pay-loading');
-                        const qrArea = document.getElementById('pay-qr-area');
-                        if (modal) modal.style.display = 'flex';
-                        // Since we are bypassing btnPay click, we might need to manually trigger order if we go this route
-                        // But btnPay should exist even if hidden.
-                        // If btnPay is explicitly removed from DOM (less likely), we'd need to duplicate logic or ensure btnPay is always in DOM.
-                        // Current logic hides it via style.display, so click() is safe.
+                    // 3. Action
+                    console.log("Action allowed:", type);
+                    if (type === 'image') {
+                        const input = document.getElementById('file-input');
+                        if (input) input.click();
+                    } else if (type === 'music') {
+                        const input = document.getElementById('music-input');
+                        if (input) input.click();
                     }
-                    return;
                 }
 
-                // 3. Action
-                console.log("Action allowed:", type);
-                if (type === 'image') {
-                    const input = document.getElementById('file-input');
-                    if (input) input.click();
-                } else if (type === 'music') {
-                    const input = document.getElementById('music-input');
-                    if (input) input.click();
+                // --- Mobile Navbar Handlers ---
+                const navbarUpload = document.getElementById('navbar-upload');
+                const navbarMusic = document.getElementById('navbar-music');
+                const navbarTutorial = document.getElementById('navbar-tutorial');
+                const navbarProfile = document.getElementById('navbar-profile');
+
+                if (navbarUpload) {
+                    navbarUpload.onclick = () => handlePrivilegedAction('image');
                 }
-            }
 
-            // --- Mobile Navbar Handlers ---
-            const navbarUpload = document.getElementById('navbar-upload');
-            const navbarMusic = document.getElementById('navbar-music');
-            const navbarTutorial = document.getElementById('navbar-tutorial');
-            const navbarProfile = document.getElementById('navbar-profile');
+                if (navbarMusic) {
+                    navbarMusic.onclick = () => handlePrivilegedAction('music');
+                }
 
-            if (navbarUpload) {
-                navbarUpload.onclick = () => handlePrivilegedAction('image');
-            }
+                if (navbarTutorial) {
+                    navbarTutorial.onclick = () => {
+                        const helpBtn = document.getElementById('help-btn');
+                        if (helpBtn) helpBtn.click();
+                    };
+                }
 
-            if (navbarMusic) {
-                navbarMusic.onclick = () => handlePrivilegedAction('music');
-            }
-
-            if (navbarTutorial) {
-                navbarTutorial.onclick = () => {
-                    const helpBtn = document.getElementById('help-btn');
-                    if (helpBtn) helpBtn.click();
-                };
-            }
-
-            if (navbarProfile) {
-                navbarProfile.onclick = () => {
-                    if (!currentUser) {
-                        // Not logged in, show login
-                        const btnLogin = document.getElementById('btn-login');
-                        if (btnLogin) btnLogin.click();
-                    } else {
-                        // Already logged in, show user card dropdown
-                        const card = document.getElementById('user-card');
-                        if (card) {
-                            const dropdown = card.querySelector('.user-dropdown');
-                            if (dropdown) {
-                                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                if (navbarProfile) {
+                    navbarProfile.onclick = () => {
+                        if (!currentUser) {
+                            // Not logged in, show login
+                            const btnLogin = document.getElementById('btn-login');
+                            if (btnLogin) btnLogin.click();
+                        } else {
+                            // Already logged in, show user card dropdown
+                            const card = document.getElementById('user-card');
+                            if (card) {
+                                const dropdown = card.querySelector('.user-dropdown');
+                                if (dropdown) {
+                                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                                }
                             }
                         }
-                    }
-                };
-            }
-
-            // Helper: Show Custom Modal
-            function showCustomModal(icon, title, msg) {
-                document.getElementById('c-modal-icon').innerText = icon;
-                document.getElementById('c-modal-title').innerText = title;
-                document.getElementById('c-modal-msg').innerText = msg;
-                document.getElementById('custom-modal').style.display = 'flex';
-            }
-
-            async function checkPaymentStatus() {
-                if (!currentUser) return false;
-                const userRes = await API.getUser(currentUser.openid);
-                if (userRes.success && userRes.user.is_vip) {
-                    handleLoginSuccess(userRes.user);
-                    const modal = document.getElementById('pay-modal');
-                    if (modal) modal.style.display = 'none';
-                    showCustomModal('🎉', '支付成功', '感谢您的支持！\n您已解锁所有高级功能。');
-                    return true;
+                    };
                 }
-                return false;
+
+                // Helper: Show Custom Modal
+                function showCustomModal(icon, title, msg) {
+                    document.getElementById('c-modal-icon').innerText = icon;
+                    document.getElementById('c-modal-title').innerText = title;
+                    document.getElementById('c-modal-msg').innerText = msg;
+                    document.getElementById('custom-modal').style.display = 'flex';
+                }
+
+                async function checkPaymentStatus() {
+                    if (!currentUser) return false;
+                    const userRes = await API.getUser(currentUser.openid);
+                    if (userRes.success && userRes.user.is_vip) {
+                        handleLoginSuccess(userRes.user);
+                        const modal = document.getElementById('pay-modal');
+                        if (modal) modal.style.display = 'none';
+                        showCustomModal('🎉', '支付成功', '感谢您的支持！\n您已解锁所有高级功能。');
+                        return true;
+                    }
+                    return false;
+                }
+
+                // 核心逻辑优化：如果用户有照片，就不加载默认照片
+                const hasUserPhotos = await loadUserImages();
+                if (!hasUserPhotos) {
+                    console.log("No user photos found, loading default demo photos.");
+                    loadPredefinedImages();
+                } else {
+                    console.log("User photos loaded, skipping defaults.");
+                }
+
+                // Logout handler
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.onclick = (e) => {
+                        e.stopPropagation(); // Prevent dropdown from closing
+                        handleLogout();
+                    };
+                }
             }
 
-            // 核心逻辑优化：如果用户有照片，就不加载默认照片
-            const hasUserPhotos = await loadUserImages();
-            if (!hasUserPhotos) {
-                console.log("No user photos found, loading default demo photos.");
+            function handleLogout() {
+                // Clear current user
+                currentUser = null;
+
+                // Reset UI
+                const btnLogin = document.getElementById('btn-login');
+                if (btnLogin) btnLogin.style.display = 'block';
+
+                const card = document.getElementById('user-card');
+                if (card) card.style.display = 'none';
+
+                const btnPay = document.getElementById('btn-pay');
+                if (btnPay) btnPay.style.display = 'none';
+
+                // Do not hide upload controls on logout, keep them visible so user can click and be prompted to login
+                // const uploadBtn = document.querySelector('.controls-wrapper');
+                // if (uploadBtn) uploadBtn.style.display = 'none';
+                // const musicUploadLabel = document.getElementById('music-upload-label');
+                // if (musicUploadLabel) musicUploadLabel.style.display = 'none';
+
+                // Clear photos from scene
+                photoMeshGroup.children.forEach(child => {
+                    photoMeshGroup.remove(child);
+                });
+                particleSystem = particleSystem.filter(p => p.type !== 'PHOTO');
+
+                // Reload default images
                 loadPredefinedImages();
-            } else {
-                console.log("User photos loaded, skipping defaults.");
+
+                console.log("User logged out");
             }
 
-            // Logout handler
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) {
-                logoutBtn.onclick = (e) => {
-                    e.stopPropagation(); // Prevent dropdown from closing
-                    handleLogout();
-                };
-            }
-        }
+            function handleLoginSuccess(user) {
+                currentUser = user;
+                const btnLogin = document.getElementById('btn-login');
+                if (btnLogin) btnLogin.style.display = 'none';
 
-        function handleLogout() {
-            // Clear current user
-            currentUser = null;
+                const card = document.getElementById('user-card');
+                const uploadBtn = document.querySelector('.controls-wrapper');
+                const btnPay = document.getElementById('btn-pay');
+                const musicUploadLabel = document.getElementById('music-upload-label');
 
-            // Reset UI
-            const btnLogin = document.getElementById('btn-login');
-            if (btnLogin) btnLogin.style.display = 'block';
+                if (card) {
+                    card.style.display = 'flex';
+                    const userIdSpan = document.getElementById('user-id');
 
-            const card = document.getElementById('user-card');
-            if (card) card.style.display = 'none';
-
-            const btnPay = document.getElementById('btn-pay');
-            if (btnPay) btnPay.style.display = 'none';
-
-            // Do not hide upload controls on logout, keep them visible so user can click and be prompted to login
-            // const uploadBtn = document.querySelector('.controls-wrapper');
-            // if (uploadBtn) uploadBtn.style.display = 'none';
-            // const musicUploadLabel = document.getElementById('music-upload-label');
-            // if (musicUploadLabel) musicUploadLabel.style.display = 'none';
-
-            // Clear photos from scene
-            photoMeshGroup.children.forEach(child => {
-                photoMeshGroup.remove(child);
-            });
-            particleSystem = particleSystem.filter(p => p.type !== 'PHOTO');
-
-            // Reload default images
-            loadPredefinedImages();
-
-            console.log("User logged out");
-        }
-
-        function handleLoginSuccess(user) {
-            currentUser = user;
-            const btnLogin = document.getElementById('btn-login');
-            if (btnLogin) btnLogin.style.display = 'none';
-
-            const card = document.getElementById('user-card');
-            const uploadBtn = document.querySelector('.controls-wrapper');
-            const btnPay = document.getElementById('btn-pay');
-            const musicUploadLabel = document.getElementById('music-upload-label');
-
-            if (card) {
-                card.style.display = 'flex';
-                const userIdSpan = document.getElementById('user-id');
-
-                // Construct Profile HTML
-                let profileHtml = `
+                    // Construct Profile HTML
+                    let profileHtml = `
                     <div style="display: flex; align-items: center; gap: 10px;">
                         ${user.avatar_url ? `<img src="${user.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid gold;">` : ''}
                         <span>${user.nickname || '用户'}</span>
                     </div>
                 `;
 
-                if (userIdSpan) userIdSpan.innerHTML = profileHtml;
+                    if (userIdSpan) userIdSpan.innerHTML = profileHtml;
 
-                if (user.is_vip) {
-                    // Premium user: show badge, hide pay button
-                    card.classList.add('vip-active');
-                    if (btnPay) btnPay.style.display = 'none';
+                    if (user.is_vip) {
+                        // Premium user: show badge, hide pay button
+                        card.classList.add('vip-active');
+                        if (btnPay) btnPay.style.display = 'none';
+                    } else {
+                        // Non-premium: hide badge, show pay button
+                        card.classList.remove('vip-active');
+                        if (btnPay) btnPay.style.display = 'block';
+                    }
+
+                    // Upload buttons are now always visible, logic handled on click
+                    const uploadBtn = document.querySelector('.controls-wrapper');
+                    // Ensure it stays flex (or empty to use CSS default)
+                    if (uploadBtn) uploadBtn.style.display = '';
+                }
+
+                // Load user's images
+                loadUserImages();
+
+                // Load user's music (if any)
+                loadUserMusic();
+
+                // Show tutorial on first login
+                checkAndShowTutorial();
+            }
+
+            // --- Tutorial System ---
+            const TUTORIAL_STEPS = [
+                {
+                    emoji: '🎄',
+                    title: '欢迎来到圣诞树回忆相册！',
+                    body: '这是一个用手势控制的3D照片墙。<br>现在，这是属于您的专属空间。'
+                },
+                {
+                    emoji: '✋',
+                    title: '手势控制说明',
+                    body: '<strong>🤜 握拳</strong> → 照片聚合<br><strong>✌️ 捏合</strong> → 聚焦查看<br><strong>🖐️ 张开</strong> → 漫天飞舞'
+                },
+                {
+                    emoji: '📸',
+                    title: '上传您的回忆',
+                    body: '点击右下角"选择文件"，上传您的个人照片。<br>您的照片将自动替换默认演示照片。<br><br>💡 <small>Premium功能</small>'
+                },
+                {
+                    emoji: '🎵',
+                    title: '自定义背景音乐',
+                    body: '上传您喜欢的音乐，打造沉浸式氛围。<br><br>💡 <small>Premium功能</small>'
+                }
+            ];
+
+            let currentTutorialStep = 0;
+
+            function showTutorial() {
+                const modal = document.getElementById('tutorial-modal');
+                if (modal) {
+                    currentTutorialStep = 0;
+                    updateTutorialContent();
+                    modal.style.display = 'flex';
+                }
+            }
+
+            function hideTutorial() {
+                const modal = document.getElementById('tutorial-modal');
+                if (modal) modal.style.display = 'none';
+
+                // Mark as seen
+                if (currentUser) {
+                    Storage.setTutorialSeen(currentUser.openid);
+                }
+            }
+
+            function updateTutorialContent() {
+                const step = TUTORIAL_STEPS[currentTutorialStep];
+                document.getElementById('tutorial-emoji').innerText = step.emoji;
+                document.getElementById('tutorial-title').innerText = step.title;
+                document.getElementById('tutorial-body').innerHTML = step.body;
+
+                // Update progress dots
+                const dots = document.querySelectorAll('.tutorial-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentTutorialStep);
+                });
+
+                // Update button text
+                const nextBtn = document.getElementById('tutorial-next');
+                if (currentTutorialStep === TUTORIAL_STEPS.length - 1) {
+                    nextBtn.innerText = '完成';
                 } else {
-                    // Non-premium: hide badge, show pay button
-                    card.classList.remove('vip-active');
-                    if (btnPay) btnPay.style.display = 'block';
+                    nextBtn.innerText = '下一步';
                 }
-
-                // Upload buttons are now always visible, logic handled on click
-                const uploadBtn = document.querySelector('.controls-wrapper');
-                // Ensure it stays flex (or empty to use CSS default)
-                if (uploadBtn) uploadBtn.style.display = '';
             }
 
-            // Load user's images
-            loadUserImages();
+            async function checkAndShowTutorial() {
+                if (!currentUser) return;
 
-            // Load user's music (if any)
-            loadUserMusic();
-
-            // Show tutorial on first login
-            checkAndShowTutorial();
-        }
-
-        // --- Tutorial System ---
-        const TUTORIAL_STEPS = [
-            {
-                emoji: '🎄',
-                title: '欢迎来到圣诞树回忆相册！',
-                body: '这是一个用手势控制的3D照片墙。<br>现在，这是属于您的专属空间。'
-            },
-            {
-                emoji: '✋',
-                title: '手势控制说明',
-                body: '<strong>🤜 握拳</strong> → 照片聚合<br><strong>✌️ 捏合</strong> → 聚焦查看<br><strong>🖐️ 张开</strong> → 漫天飞舞'
-            },
-            {
-                emoji: '📸',
-                title: '上传您的回忆',
-                body: '点击右下角"选择文件"，上传您的个人照片。<br>您的照片将自动替换默认演示照片。<br><br>💡 <small>Premium功能</small>'
-            },
-            {
-                emoji: '🎵',
-                title: '自定义背景音乐',
-                body: '上传您喜欢的音乐，打造沉浸式氛围。<br><br>💡 <small>Premium功能</small>'
+                const hasSeen = await Storage.hasTutorialSeen(currentUser.openid);
+                if (!hasSeen) {
+                    setTimeout(() => showTutorial(), 500);
+                }
             }
-        ];
 
-        let currentTutorialStep = 0;
+            // Tutorial event listeners
+            document.getElementById('help-btn')?.addEventListener('click', showTutorial);
+            document.getElementById('tutorial-close')?.addEventListener('click', hideTutorial);
+            document.getElementById('tutorial-skip')?.addEventListener('click', hideTutorial);
 
-        function showTutorial() {
-            const modal = document.getElementById('tutorial-modal');
-            if (modal) {
-                currentTutorialStep = 0;
-                updateTutorialContent();
-                modal.style.display = 'flex';
-            }
-        }
-
-        function hideTutorial() {
-            const modal = document.getElementById('tutorial-modal');
-            if (modal) modal.style.display = 'none';
-
-            // Mark as seen
-            if (currentUser) {
-                Storage.setTutorialSeen(currentUser.openid);
-            }
-        }
-
-        function updateTutorialContent() {
-            const step = TUTORIAL_STEPS[currentTutorialStep];
-            document.getElementById('tutorial-emoji').innerText = step.emoji;
-            document.getElementById('tutorial-title').innerText = step.title;
-            document.getElementById('tutorial-body').innerHTML = step.body;
-
-            // Update progress dots
-            const dots = document.querySelectorAll('.tutorial-dot');
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentTutorialStep);
+            document.getElementById('tutorial-next')?.addEventListener('click', () => {
+                if (currentTutorialStep < TUTORIAL_STEPS.length - 1) {
+                    currentTutorialStep++;
+                    updateTutorialContent();
+                } else {
+                    hideTutorial();
+                }
             });
 
-            // Update button text
-            const nextBtn = document.getElementById('tutorial-next');
-            if (currentTutorialStep === TUTORIAL_STEPS.length - 1) {
-                nextBtn.innerText = '完成';
-            } else {
-                nextBtn.innerText = '下一步';
-            }
-        }
+            // --- Music Upload ---
+            async function loadUserMusic() {
+                if (!currentUser) return;
 
-        async function checkAndShowTutorial() {
-            if (!currentUser) return;
-
-            const hasSeen = await Storage.hasTutorialSeen(currentUser.openid);
-            if (!hasSeen) {
-                setTimeout(() => showTutorial(), 500);
-            }
-        }
-
-        // Tutorial event listeners
-        document.getElementById('help-btn')?.addEventListener('click', showTutorial);
-        document.getElementById('tutorial-close')?.addEventListener('click', hideTutorial);
-        document.getElementById('tutorial-skip')?.addEventListener('click', hideTutorial);
-
-        document.getElementById('tutorial-next')?.addEventListener('click', () => {
-            if (currentTutorialStep < TUTORIAL_STEPS.length - 1) {
-                currentTutorialStep++;
-                updateTutorialContent();
-            } else {
-                hideTutorial();
-            }
-        });
-
-        // --- Music Upload ---
-        async function loadUserMusic() {
-            if (!currentUser) return;
-
-            const musicData = await Storage.loadMusic(currentUser.openid);
-            if (musicData) {
-                const bgm = document.getElementById('bgm');
-                if (bgm) {
-                    bgm.src = musicData.data;
-                    bgm.load();
-                    console.log(`Loaded custom music for user ${currentUser.openid}`);
+                const musicData = await Storage.loadMusic(currentUser.openid);
+                if (musicData) {
+                    const bgm = document.getElementById('bgm');
+                    if (bgm) {
+                        bgm.src = musicData.data;
+                        bgm.load();
+                        console.log(`Loaded custom music for user ${currentUser.openid}`);
+                    }
                 }
             }
-        }
 
-        function handleMusicUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+            function handleMusicUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
 
-            // Check permissions
-            if (!currentUser) {
-                alert("请先登录");
-                return;
-            }
-            if (!currentUser.is_vip) {
-                alert("请先购买Premium产品以解锁音乐上传功能");
-                return;
-            }
-
-            // Check file type
-            if (!file.type.startsWith('audio/')) {
-                alert("请选择音频文件");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                const base64 = ev.target.result;
-
-                // Save to storage
-                await Storage.saveMusic(currentUser.openid, {
-                    name: file.name,
-                    data: base64,
-                    type: file.type
-                });
-
-                // Apply immediately
-                const bgm = document.getElementById('bgm');
-                if (bgm) {
-                    bgm.src = base64;
-                    bgm.load();
-                    bgm.play().catch(() => { });
+                // Check permissions
+                if (!currentUser) {
+                    alert("请先登录");
+                    return;
+                }
+                if (!currentUser.is_vip) {
+                    alert("请先购买Premium产品以解锁音乐上传功能");
+                    return;
                 }
 
-                alert("音乐上传成功！");
-            };
+                // Check file type
+                if (!file.type.startsWith('audio/')) {
+                    alert("请选择音频文件");
+                    return;
+                }
 
-            reader.readAsDataURL(file);
-        }
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    const base64 = ev.target.result;
 
-        // Music upload event listener
-        document.getElementById('music-input')?.addEventListener('change', handleMusicUpload);
-
-        async function loadUserImages() {
-            if (!currentUser) return false;
-
-            const images = await Storage.loadImages(currentUser.openid);
-            if (images && images.length > 0) {
-                console.log(`Loaded ${images.length} images for user ${currentUser.openid}`);
-                images.forEach(imgData => {
-                    const loader = new THREE.TextureLoader();
-                    loader.load(imgData.data, (t) => {
-                        t.colorSpace = THREE.SRGBColorSpace;
-                        addPhotoToScene(t);
+                    // Save to storage
+                    await Storage.saveMusic(currentUser.openid, {
+                        name: file.name,
+                        data: base64,
+                        type: file.type
                     });
+
+                    // Apply immediately
+                    const bgm = document.getElementById('bgm');
+                    if (bgm) {
+                        bgm.src = base64;
+                        bgm.load();
+                        bgm.play().catch(() => { });
+                    }
+
+                    alert("音乐上传成功！");
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+            // Music upload event listener
+            document.getElementById('music-input')?.addEventListener('change', handleMusicUpload);
+
+            async function loadUserImages() {
+                if (!currentUser) return false;
+
+                const images = await Storage.loadImages(currentUser.openid);
+                if (images && images.length > 0) {
+                    console.log(`Loaded ${images.length} images for user ${currentUser.openid}`);
+                    images.forEach(imgData => {
+                        const loader = new THREE.TextureLoader();
+                        loader.load(imgData.data, (t) => {
+                            t.colorSpace = THREE.SRGBColorSpace;
+                            addPhotoToScene(t);
+                        });
+                    });
+                    return true;
+                }
+                return false;
+            }
+
+            // --- 增强版图片加载系统 ---
+            function loadPredefinedImages() {
+                const loader = new THREE.TextureLoader();
+                CONFIG.preload.images.forEach(url => {
+                    loader.load(url,
+                        (t) => { t.colorSpace = THREE.SRGBColorSpace; addPhotoToScene(t); },
+                        undefined,
+                        (e) => { console.log(`Skipped: ${url}`); }
+                    );
                 });
-                return true;
-            }
-            return false;
-        }
 
-        // --- 增强版图片加载系统 ---
-        function loadPredefinedImages() {
-            const loader = new THREE.TextureLoader();
-            CONFIG.preload.images.forEach(url => {
-                loader.load(url,
-                    (t) => { t.colorSpace = THREE.SRGBColorSpace; addPhotoToScene(t); },
-                    undefined,
-                    (e) => { console.log(`Skipped: ${url}`); }
-                );
-            });
-
-            // Disabled local image scanning (no local images folder in deployment)
-            // if (CONFIG.preload.autoScanLocal) {
-            //     for (let i = 1; i <= CONFIG.preload.scanCount; i++) {
-            //         const pathJpg = `./images/(${i}).png`;
-            //         const pathPng = `./images/(${i}).png`;
-            //         loader.load(pathJpg,
-            //             (t) => { t.colorSpace = THREE.SRGBColorSpace; addPhotoToScene(t); },
-            //             () => {
-            //                 loader.load(pathPng,
-            //                     (t) => { t.colorSpace = THREE.SRGBColorSpace; addPhotoToScene(t); },
-            //                     undefined,
-            //                     () => { }
-            //                 );
-            //             }
-            //         );
-            //     }
-            // }
-        }
-
-
-
-        function initThree() {
-            const container = document.getElementById('canvas-container');
-            scene = new THREE.Scene();
-            // 设置 Three.js 场景背景为深蓝色，与 CSS 渐变配合
-            scene.background = new THREE.Color(CONFIG.colors.bg);
-            scene.fog = new THREE.FogExp2(CONFIG.colors.fog, 0.015); // 调整雾气浓度
-
-            camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 2, CONFIG.camera.z);
-
-            // 启用 alpha: true 以便未来如果有需要可以透过背景
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.toneMapping = THREE.ReinhardToneMapping;
-            renderer.toneMappingExposure = 2.2;
-            container.appendChild(renderer.domElement);
-
-            mainGroup = new THREE.Group();
-            scene.add(mainGroup);
-
-
-        }
-
-        function setupEnvironment() {
-            const pmremGenerator = new THREE.PMREMGenerator(renderer);
-            scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
-        }
-
-        function setupLights() {
-            const ambient = new THREE.AmbientLight(0xffffff, 0.6); // 稍微提高环境光
-            scene.add(ambient);
-
-            const innerLight = new THREE.PointLight(0xffaa00, 2, 20);
-            innerLight.position.set(0, 5, 0);
-            mainGroup.add(innerLight);
-
-            const spotGold = new THREE.SpotLight(0xffcc66, 1200);
-            spotGold.position.set(30, 40, 40);
-            spotGold.angle = 0.5;
-            spotGold.penumbra = 0.5;
-            scene.add(spotGold);
-
-            const spotBlue = new THREE.SpotLight(0x6688ff, 800); // 增强蓝色背光，营造月光感
-            spotBlue.position.set(-30, 20, -30);
-            scene.add(spotBlue);
-
-            const fill = new THREE.DirectionalLight(0xffeebb, 0.8);
-            fill.position.set(0, 0, 50);
-            scene.add(fill);
-        }
-
-        function setupPostProcessing() {
-            const renderScene = new RenderPass(scene, camera);
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-            bloomPass.threshold = 0.65; // 稍微降低阈值让更多东西发光
-            bloomPass.strength = 0.5;
-            bloomPass.radius = 0.4;
-
-            composer = new EffectComposer(renderer);
-            composer.addPass(renderScene);
-            composer.addPass(bloomPass);
-        }
-
-
-        // --- Particle Deer System ---
-        class ParticleDeer {
-            constructor(scene) {
-                this.scene = scene;
-                this.particles = null;
-                this.bones = {};
-                this.clock = new THREE.Clock();
-                this.group = new THREE.Group();
-                this.scene.add(this.group);
-
-                // Config
-                this.speed = 10;
-                this.color = new THREE.Color(0xffd700); // Gold
-                this.particleCount = 4000;
-
-                this.init();
+                // Disabled local image scanning (no local images folder in deployment)
+                // if (CONFIG.preload.autoScanLocal) {
+                //     for (let i = 1; i <= CONFIG.preload.scanCount; i++) {
+                //         const pathJpg = `./images/(${i}).png`;
+                //         const pathPng = `./images/(${i}).png`;
+                //         loader.load(pathJpg,
+                //             (t) => { t.colorSpace = THREE.SRGBColorSpace; addPhotoToScene(t); },
+                //             () => {
+                //                 loader.load(pathPng,
+                //                     (t) => { t.colorSpace = THREE.SRGBColorSpace; addPhotoToScene(t); },
+                //                     undefined,
+                //                     () => { }
+                //                 );
+                //             }
+                //         );
+                //     }
+                // }
             }
 
-            init() {
-                // define bones structure (relative positions)
-                // We simulate bones by defining start and end points
-                // 0: Spine Back, 1: Spine Front
-                // 2: Neck Base, 3: Head
-                // 4: FL Shoulder, 5: FL Knee, 6: FL Hoof
-                // 7: FR ...
-                // 10: BL Hip, 11: BL Knee, 12: BL Hoof
-                // 13: BR ...
 
-                // Create particles
-                const geometry = new THREE.BufferGeometry();
-                const positions = new Float32Array(this.particleCount * 3);
-                const colors = new Float32Array(this.particleCount * 3);
-                const sizes = new Float32Array(this.particleCount);
-                const boneIndices = new Float32Array(this.particleCount); // Which bone part this particle belongs to
-                const offsets = new Float32Array(this.particleCount * 3); // Offset from bone center
 
-                // Distribute particles to body parts
-                for (let i = 0; i < this.particleCount; i++) {
-                    // Assign to a body part based on probability
-                    const r = Math.random();
-                    let boneIndex = 0;
+            function initThree() {
+                const container = document.getElementById('canvas-container');
+                scene = new THREE.Scene();
+                // 设置 Three.js 场景背景为深蓝色，与 CSS 渐变配合
+                scene.background = new THREE.Color(CONFIG.colors.bg);
+                scene.fog = new THREE.FogExp2(CONFIG.colors.fog, 0.015); // 调整雾气浓度
 
-                    if (r < 0.4) boneIndex = 0; // Body (40%)
-                    else if (r < 0.55) boneIndex = 1; // Neck/Head (15%)
-                    else if (r < 0.65) boneIndex = 2; // FL Leg
-                    else if (r < 0.75) boneIndex = 3; // FR Leg
-                    else if (r < 0.85) boneIndex = 4; // BL Leg
-                    else boneIndex = 5; // BR Leg
+                camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.set(0, 2, CONFIG.camera.z);
 
-                    boneIndices[i] = boneIndex;
+                // 启用 alpha: true 以便未来如果有需要可以透过背景
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                renderer.toneMapping = THREE.ReinhardToneMapping;
+                renderer.toneMappingExposure = 2.2;
+                container.appendChild(renderer.domElement);
 
-                    // Random offset around the bone
-                    const thickness = boneIndex === 0 ? 0.8 : (boneIndex === 1 ? 0.5 : 0.2);
-                    offsets[i * 3] = (Math.random() - 0.5) * thickness;
-                    offsets[i * 3 + 1] = (Math.random() - 0.5) * thickness;
-                    offsets[i * 3 + 2] = (Math.random() - 0.5) * thickness;
+                mainGroup = new THREE.Group();
+                scene.add(mainGroup);
 
-                    // Colors (Golden/White gradient)
-                    const mix = Math.random();
-                    colors[i * 3] = 1.0; // R
-                    colors[i * 3 + 1] = 0.8 + mix * 0.2; // G
-                    colors[i * 3 + 2] = mix * 0.8; // B
 
-                    sizes[i] = Math.random() * 0.15 + 0.05;
+            }
+
+            function setupEnvironment() {
+                const pmremGenerator = new THREE.PMREMGenerator(renderer);
+                scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+            }
+
+            function setupLights() {
+                const ambient = new THREE.AmbientLight(0xffffff, 0.6); // 稍微提高环境光
+                scene.add(ambient);
+
+                const innerLight = new THREE.PointLight(0xffaa00, 2, 20);
+                innerLight.position.set(0, 5, 0);
+                mainGroup.add(innerLight);
+
+                const spotGold = new THREE.SpotLight(0xffcc66, 1200);
+                spotGold.position.set(30, 40, 40);
+                spotGold.angle = 0.5;
+                spotGold.penumbra = 0.5;
+                scene.add(spotGold);
+
+                const spotBlue = new THREE.SpotLight(0x6688ff, 800); // 增强蓝色背光，营造月光感
+                spotBlue.position.set(-30, 20, -30);
+                scene.add(spotBlue);
+
+                const fill = new THREE.DirectionalLight(0xffeebb, 0.8);
+                fill.position.set(0, 0, 50);
+                scene.add(fill);
+            }
+
+            function setupPostProcessing() {
+                const renderScene = new RenderPass(scene, camera);
+                const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+                bloomPass.threshold = 0.65; // 稍微降低阈值让更多东西发光
+                bloomPass.strength = 0.5;
+                bloomPass.radius = 0.4;
+
+                composer = new EffectComposer(renderer);
+                composer.addPass(renderScene);
+                composer.addPass(bloomPass);
+            }
+
+
+            // --- Particle Deer System ---
+            class ParticleDeer {
+                constructor(scene) {
+                    this.scene = scene;
+                    this.particles = null;
+                    this.bones = {};
+                    this.clock = new THREE.Clock();
+                    this.group = new THREE.Group();
+                    this.scene.add(this.group);
+
+                    // Config
+                    this.speed = 10;
+                    this.color = new THREE.Color(0xffd700); // Gold
+                    this.particleCount = 4000;
+
+                    this.init();
                 }
 
-                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+                init() {
+                    // define bones structure (relative positions)
+                    // We simulate bones by defining start and end points
+                    // 0: Spine Back, 1: Spine Front
+                    // 2: Neck Base, 3: Head
+                    // 4: FL Shoulder, 5: FL Knee, 6: FL Hoof
+                    // 7: FR ...
+                    // 10: BL Hip, 11: BL Knee, 12: BL Hoof
+                    // 13: BR ...
 
-                // Store data for animation usage
-                geometry.userData = { boneIndices, offsets };
+                    // Create particles
+                    const geometry = new THREE.BufferGeometry();
+                    const positions = new Float32Array(this.particleCount * 3);
+                    const colors = new Float32Array(this.particleCount * 3);
+                    const sizes = new Float32Array(this.particleCount);
+                    const boneIndices = new Float32Array(this.particleCount); // Which bone part this particle belongs to
+                    const offsets = new Float32Array(this.particleCount * 3); // Offset from bone center
 
-                // Material
+                    // Distribute particles to body parts
+                    for (let i = 0; i < this.particleCount; i++) {
+                        // Assign to a body part based on probability
+                        const r = Math.random();
+                        let boneIndex = 0;
+
+                        if (r < 0.4) boneIndex = 0; // Body (40%)
+                        else if (r < 0.55) boneIndex = 1; // Neck/Head (15%)
+                        else if (r < 0.65) boneIndex = 2; // FL Leg
+                        else if (r < 0.75) boneIndex = 3; // FR Leg
+                        else if (r < 0.85) boneIndex = 4; // BL Leg
+                        else boneIndex = 5; // BR Leg
+
+                        boneIndices[i] = boneIndex;
+
+                        // Random offset around the bone
+                        const thickness = boneIndex === 0 ? 0.8 : (boneIndex === 1 ? 0.5 : 0.2);
+                        offsets[i * 3] = (Math.random() - 0.5) * thickness;
+                        offsets[i * 3 + 1] = (Math.random() - 0.5) * thickness;
+                        offsets[i * 3 + 2] = (Math.random() - 0.5) * thickness;
+
+                        // Colors (Golden/White gradient)
+                        const mix = Math.random();
+                        colors[i * 3] = 1.0; // R
+                        colors[i * 3 + 1] = 0.8 + mix * 0.2; // G
+                        colors[i * 3 + 2] = mix * 0.8; // B
+
+                        sizes[i] = Math.random() * 0.15 + 0.05;
+                    }
+
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+                    // Store data for animation usage
+                    geometry.userData = { boneIndices, offsets };
+
+                    // Material
+                    const material = new THREE.PointsMaterial({
+                        size: 0.2,
+                        vertexColors: true,
+                        transparent: true,
+                        opacity: 0.8,
+                        blending: THREE.AdditiveBlending,
+                        depthWrite: false,
+                        sizeAttenuation: true
+                        // map: particleTexture // Use default or generate one
+                    });
+
+                    this.particles = new THREE.Points(geometry, material);
+                    this.group.add(this.particles);
+
+                    // Initial position (Near tree)
+                    this.group.position.set(20, 0, -20);
+                    this.group.rotation.y = -Math.PI / 4;
+                }
+
+                update(time) {
+                    if (!this.particles) return;
+
+                    const positions = this.particles.geometry.attributes.position.array;
+                    const { boneIndices, offsets } = this.particles.geometry.userData;
+
+                    // Animate Bones (Running Cycle)
+                    const cycle = time * 10; // Run speed
+
+                    // Bone definitions (Dynamic start/end points)
+                    // Coordinate space: Local to deer group
+                    // Y=0 is ground roughly, we lift it up
+                    const bodyY = 12 + Math.sin(cycle * 2) * 0.2;
+
+                    // Spine: (-3, bodyY, 0) to (3, bodyY, 0)
+                    const spineStart = new THREE.Vector3(-3, bodyY, 0);
+                    const spineEnd = new THREE.Vector3(3, bodyY + 0.5, 0);
+
+                    // Neck: spineEnd to Up/Forward
+                    const headPos = new THREE.Vector3(5, bodyY + 3 + Math.sin(cycle * 2 - 1) * 0.3, 0);
+
+                    // Legs (Simple 2-joint IK approximation or just swinging lines)
+                    // Front Left
+                    const flHip = new THREE.Vector3(2.5, bodyY, -0.5);
+                    const flKneePhase = cycle;
+                    const flFoot = new THREE.Vector3(
+                        2.5 + Math.cos(flKneePhase) * 2,
+                        Math.max(0, 4 + Math.sin(flKneePhase) * 4),
+                        -0.5
+                    );
+
+                    // Front Right (Offset phase)
+                    const frHip = new THREE.Vector3(2.5, bodyY, 0.5);
+                    const frKneePhase = cycle + Math.PI;
+                    const frFoot = new THREE.Vector3(
+                        2.5 + Math.cos(frKneePhase) * 2,
+                        Math.max(0, 4 + Math.sin(frKneePhase) * 4),
+                        0.5
+                    );
+
+                    // Back Left (Offset phase)
+                    const blHip = new THREE.Vector3(-2.5, bodyY, -0.5);
+                    const blKneePhase = cycle + Math.PI * 0.5;
+                    const blFoot = new THREE.Vector3(
+                        -2.5 + Math.cos(blKneePhase) * 2,
+                        Math.max(0, 4 + Math.sin(blKneePhase) * 4),
+                        -0.5
+                    );
+
+                    // Back Right (Offset phase)
+                    const brHip = new THREE.Vector3(-2.5, bodyY, 0.5);
+                    const brKneePhase = cycle + Math.PI * 1.5;
+                    const brFoot = new THREE.Vector3(
+                        -2.5 + Math.cos(brKneePhase) * 2,
+                        Math.max(0, 4 + Math.sin(brKneePhase) * 4),
+                        0.5
+                    );
+
+                    // Update particles
+                    for (let i = 0; i < this.particleCount; i++) {
+                        const boneIdx = boneIndices[i];
+                        const ox = offsets[i * 3];
+                        const oy = offsets[i * 3 + 1];
+                        const oz = offsets[i * 3 + 2];
+
+                        let start, end, t;
+
+                        // Simple logic: interpolate between start/end of bone with random t
+                        // We use the particle index as a stable random seed for 't'
+                        t = (i % 100) / 100;
+
+                        if (boneIdx === 0) { // Body
+                            start = spineStart; end = spineEnd;
+                        } else if (boneIdx === 1) { // Neck/Head
+                            start = spineEnd; end = headPos;
+                        } else if (boneIdx === 2) { // FL
+                            start = flHip; end = flFoot;
+                        } else if (boneIdx === 3) { // FR
+                            start = frHip; end = frFoot;
+                        } else if (boneIdx === 4) { // BL
+                            start = blHip; end = blFoot;
+                        } else { // BR
+                            start = brHip; end = brFoot;
+                        }
+
+                        // Lerp
+                        const x = start.x + (end.x - start.x) * t + ox;
+                        const y = start.y + (end.y - start.y) * t + oy;
+                        const z = start.z + (end.z - start.z) * t + oz;
+
+                        // Trail effect: lazy update (not strictly physics trail, but motion blur)
+                        // We just set current pos. A shader would be better for trails but this is fast.
+                        // To add "flow", adds some sine wave to offsets
+                        const flow = Math.sin(time * 20 + i) * 0.05;
+
+                        positions[i * 3] = x + flow;
+                        positions[i * 3 + 1] = y + flow;
+                        positions[i * 3 + 2] = z;
+                    }
+
+                    this.particles.geometry.attributes.position.needsUpdate = true;
+
+                    // Move the whole group in a circle around the tree?
+                    // Or just run in place? User said "running Christmas deer", "high speed".
+                    // Let's make it run in a large circle.
+                    const runRadius = 60;
+                    const runSpeed = 0.5;
+                    this.group.position.x = Math.sin(time * runSpeed) * runRadius;
+                    this.group.position.z = Math.cos(time * runSpeed) * runRadius;
+                    this.group.rotation.y = time * runSpeed + Math.PI; // Face forward
+                }
+            }
+
+            function createTextures() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128; canvas.height = 128;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, 128, 128);
+                ctx.fillStyle = '#880000';
+                ctx.beginPath();
+                for (let i = -128; i < 256; i += 32) {
+                    ctx.moveTo(i, 0); ctx.lineTo(i + 32, 128); ctx.lineTo(i + 16, 128); ctx.lineTo(i - 16, 0);
+                }
+                ctx.fill();
+                caneTexture = new THREE.CanvasTexture(canvas);
+                caneTexture.wrapS = THREE.RepeatWrapping;
+                caneTexture.wrapT = THREE.RepeatWrapping;
+                caneTexture.repeat.set(3, 3);
+            }
+
+            // --- 新增：雪花系统 ---
+            function createSnow() {
+                const geometry = new THREE.BufferGeometry();
+                const vertices = [];
+                const velocities = [];
+
+                const loader = new THREE.TextureLoader();
+                // 创建一个简单的圆形纹理作为雪花
+                const canvas = document.createElement('canvas');
+                canvas.width = 32; canvas.height = 32;
+                const context = canvas.getContext('2d');
+                context.fillStyle = 'white';
+                context.beginPath();
+                context.arc(16, 16, 16, 0, Math.PI * 2);
+                context.fill();
+                const snowTexture = new THREE.CanvasTexture(canvas);
+
+                for (let i = 0; i < CONFIG.particles.snowCount; i++) {
+                    const x = THREE.MathUtils.randFloatSpread(100);
+                    const y = THREE.MathUtils.randFloatSpread(60);
+                    const z = THREE.MathUtils.randFloatSpread(60);
+                    vertices.push(x, y, z);
+
+                    // 存储每个雪花的速度和摆动参数
+                    velocities.push(
+                        Math.random() * 0.2 + 0.1, // fall speed
+                        Math.random() * 0.05       // sway speed
+                    );
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                geometry.setAttribute('userData', new THREE.Float32BufferAttribute(velocities, 2));
+
                 const material = new THREE.PointsMaterial({
-                    size: 0.2,
-                    vertexColors: true,
+                    color: 0xffffff,
+                    size: 0.4,
+                    map: snowTexture,
                     transparent: true,
                     opacity: 0.8,
                     blending: THREE.AdditiveBlending,
-                    depthWrite: false,
-                    sizeAttenuation: true
-                    // map: particleTexture // Use default or generate one
+                    depthWrite: false
                 });
 
-                this.particles = new THREE.Points(geometry, material);
-                this.group.add(this.particles);
-
-                // Initial position (Near tree)
-                this.group.position.set(20, 0, -20);
-                this.group.rotation.y = -Math.PI / 4;
+                const snow = new THREE.Points(geometry, material);
+                scene.add(snow);
+                snowSystem = snow;
             }
 
-            update(time) {
-                if (!this.particles) return;
+            function updateSnow() {
+                if (!snowSystem) return;
 
-                const positions = this.particles.geometry.attributes.position.array;
-                const { boneIndices, offsets } = this.particles.geometry.userData;
+                const positions = snowSystem.geometry.attributes.position.array;
+                const userData = snowSystem.geometry.attributes.userData.array;
 
-                // Animate Bones (Running Cycle)
-                const cycle = time * 10; // Run speed
+                for (let i = 0; i < CONFIG.particles.snowCount; i++) {
+                    // Y轴下落
+                    const fallSpeed = userData[i * 2];
+                    positions[i * 3 + 1] -= fallSpeed;
 
-                // Bone definitions (Dynamic start/end points)
-                // Coordinate space: Local to deer group
-                // Y=0 is ground roughly, we lift it up
-                const bodyY = 12 + Math.sin(cycle * 2) * 0.2;
+                    // X轴摇摆
+                    const swaySpeed = userData[i * 2 + 1];
+                    positions[i * 3] += Math.sin(clock.elapsedTime * 2 + i) * swaySpeed * 0.1;
 
-                // Spine: (-3, bodyY, 0) to (3, bodyY, 0)
-                const spineStart = new THREE.Vector3(-3, bodyY, 0);
-                const spineEnd = new THREE.Vector3(3, bodyY + 0.5, 0);
+                    // 循环重置
+                    if (positions[i * 3 + 1] < -30) {
+                        positions[i * 3 + 1] = 30;
+                        positions[i * 3] = THREE.MathUtils.randFloatSpread(100);
+                        positions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(60);
+                    }
+                }
+                snowSystem.geometry.attributes.position.needsUpdate = true;
+            }
 
-                // Neck: spineEnd to Up/Forward
-                const headPos = new THREE.Vector3(5, bodyY + 3 + Math.sin(cycle * 2 - 1) * 0.3, 0);
+            class Particle {
+                constructor(mesh, type, isDust = false) {
+                    this.mesh = mesh;
+                    this.type = type;
+                    this.isDust = isDust;
 
-                // Legs (Simple 2-joint IK approximation or just swinging lines)
-                // Front Left
-                const flHip = new THREE.Vector3(2.5, bodyY, -0.5);
-                const flKneePhase = cycle;
-                const flFoot = new THREE.Vector3(
-                    2.5 + Math.cos(flKneePhase) * 2,
-                    Math.max(0, 4 + Math.sin(flKneePhase) * 4),
-                    -0.5
-                );
+                    this.posTree = new THREE.Vector3();
+                    this.posScatter = new THREE.Vector3();
+                    this.baseScale = mesh.scale.x;
 
-                // Front Right (Offset phase)
-                const frHip = new THREE.Vector3(2.5, bodyY, 0.5);
-                const frKneePhase = cycle + Math.PI;
-                const frFoot = new THREE.Vector3(
-                    2.5 + Math.cos(frKneePhase) * 2,
-                    Math.max(0, 4 + Math.sin(frKneePhase) * 4),
-                    0.5
-                );
+                    const speedMult = (type === 'PHOTO') ? 0.3 : 2.0;
 
-                // Back Left (Offset phase)
-                const blHip = new THREE.Vector3(-2.5, bodyY, -0.5);
-                const blKneePhase = cycle + Math.PI * 0.5;
-                const blFoot = new THREE.Vector3(
-                    -2.5 + Math.cos(blKneePhase) * 2,
-                    Math.max(0, 4 + Math.sin(blKneePhase) * 4),
-                    -0.5
-                );
+                    this.spinSpeed = new THREE.Vector3(
+                        (Math.random() - 0.5) * speedMult,
+                        (Math.random() - 0.5) * speedMult,
+                        (Math.random() - 0.5) * speedMult
+                    );
 
-                // Back Right (Offset phase)
-                const brHip = new THREE.Vector3(-2.5, bodyY, 0.5);
-                const brKneePhase = cycle + Math.PI * 1.5;
-                const brFoot = new THREE.Vector3(
-                    -2.5 + Math.cos(brKneePhase) * 2,
-                    Math.max(0, 4 + Math.sin(brKneePhase) * 4),
-                    0.5
-                );
+                    this.calculatePositions();
+                }
 
-                // Update particles
-                for (let i = 0; i < this.particleCount; i++) {
-                    const boneIdx = boneIndices[i];
-                    const ox = offsets[i * 3];
-                    const oy = offsets[i * 3 + 1];
-                    const oz = offsets[i * 3 + 2];
-
-                    let start, end, t;
-
-                    // Simple logic: interpolate between start/end of bone with random t
-                    // We use the particle index as a stable random seed for 't'
-                    t = (i % 100) / 100;
-
-                    if (boneIdx === 0) { // Body
-                        start = spineStart; end = spineEnd;
-                    } else if (boneIdx === 1) { // Neck/Head
-                        start = spineEnd; end = headPos;
-                    } else if (boneIdx === 2) { // FL
-                        start = flHip; end = flFoot;
-                    } else if (boneIdx === 3) { // FR
-                        start = frHip; end = frFoot;
-                    } else if (boneIdx === 4) { // BL
-                        start = blHip; end = blFoot;
-                    } else { // BR
-                        start = brHip; end = brFoot;
+                calculatePositions() {
+                    if (this.type === 'PHOTO') {
+                        this.posTree.set(0, 0, 0);
+                        const rScatter = 8 + Math.random() * 12;
+                        const theta = Math.random() * Math.PI * 2;
+                        const phi = Math.acos(2 * Math.random() - 1);
+                        this.posScatter.set(
+                            rScatter * Math.sin(phi) * Math.cos(theta),
+                            rScatter * Math.sin(phi) * Math.sin(theta),
+                            rScatter * Math.cos(phi)
+                        );
+                        return;
                     }
 
-                    // Lerp
-                    const x = start.x + (end.x - start.x) * t + ox;
-                    const y = start.y + (end.y - start.y) * t + oy;
-                    const z = start.z + (end.z - start.z) * t + oz;
+                    const h = CONFIG.particles.treeHeight;
+                    const halfH = h / 2;
+                    let t = Math.random();
+                    t = Math.pow(t, 0.8);
+                    const y = (t * h) - halfH;
 
-                    // Trail effect: lazy update (not strictly physics trail, but motion blur)
-                    // We just set current pos. A shader would be better for trails but this is fast.
-                    // To add "flow", adds some sine wave to offsets
-                    const flow = Math.sin(time * 20 + i) * 0.05;
+                    let rMax = CONFIG.particles.treeRadius * (1.0 - t);
+                    if (rMax < 0.5) rMax = 0.5;
 
-                    positions[i * 3] = x + flow;
-                    positions[i * 3 + 1] = y + flow;
-                    positions[i * 3 + 2] = z;
-                }
+                    const angle = t * 50 * Math.PI + Math.random() * Math.PI;
+                    const r = rMax * (0.8 + Math.random() * 0.4);
+                    this.posTree.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
 
-                this.particles.geometry.attributes.position.needsUpdate = true;
-
-                // Move the whole group in a circle around the tree?
-                // Or just run in place? User said "running Christmas deer", "high speed".
-                // Let's make it run in a large circle.
-                const runRadius = 60;
-                const runSpeed = 0.5;
-                this.group.position.x = Math.sin(time * runSpeed) * runRadius;
-                this.group.position.z = Math.cos(time * runSpeed) * runRadius;
-                this.group.rotation.y = time * runSpeed + Math.PI; // Face forward
-            }
-        }
-
-        function createTextures() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128; canvas.height = 128;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 128, 128);
-            ctx.fillStyle = '#880000';
-            ctx.beginPath();
-            for (let i = -128; i < 256; i += 32) {
-                ctx.moveTo(i, 0); ctx.lineTo(i + 32, 128); ctx.lineTo(i + 16, 128); ctx.lineTo(i - 16, 0);
-            }
-            ctx.fill();
-            caneTexture = new THREE.CanvasTexture(canvas);
-            caneTexture.wrapS = THREE.RepeatWrapping;
-            caneTexture.wrapT = THREE.RepeatWrapping;
-            caneTexture.repeat.set(3, 3);
-        }
-
-        // --- 新增：雪花系统 ---
-        function createSnow() {
-            const geometry = new THREE.BufferGeometry();
-            const vertices = [];
-            const velocities = [];
-
-            const loader = new THREE.TextureLoader();
-            // 创建一个简单的圆形纹理作为雪花
-            const canvas = document.createElement('canvas');
-            canvas.width = 32; canvas.height = 32;
-            const context = canvas.getContext('2d');
-            context.fillStyle = 'white';
-            context.beginPath();
-            context.arc(16, 16, 16, 0, Math.PI * 2);
-            context.fill();
-            const snowTexture = new THREE.CanvasTexture(canvas);
-
-            for (let i = 0; i < CONFIG.particles.snowCount; i++) {
-                const x = THREE.MathUtils.randFloatSpread(100);
-                const y = THREE.MathUtils.randFloatSpread(60);
-                const z = THREE.MathUtils.randFloatSpread(60);
-                vertices.push(x, y, z);
-
-                // 存储每个雪花的速度和摆动参数
-                velocities.push(
-                    Math.random() * 0.2 + 0.1, // fall speed
-                    Math.random() * 0.05       // sway speed
-                );
-            }
-
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-            geometry.setAttribute('userData', new THREE.Float32BufferAttribute(velocities, 2));
-
-            const material = new THREE.PointsMaterial({
-                color: 0xffffff,
-                size: 0.4,
-                map: snowTexture,
-                transparent: true,
-                opacity: 0.8,
-                blending: THREE.AdditiveBlending,
-                depthWrite: false
-            });
-
-            const snow = new THREE.Points(geometry, material);
-            scene.add(snow);
-            snowSystem = snow;
-        }
-
-        function updateSnow() {
-            if (!snowSystem) return;
-
-            const positions = snowSystem.geometry.attributes.position.array;
-            const userData = snowSystem.geometry.attributes.userData.array;
-
-            for (let i = 0; i < CONFIG.particles.snowCount; i++) {
-                // Y轴下落
-                const fallSpeed = userData[i * 2];
-                positions[i * 3 + 1] -= fallSpeed;
-
-                // X轴摇摆
-                const swaySpeed = userData[i * 2 + 1];
-                positions[i * 3] += Math.sin(clock.elapsedTime * 2 + i) * swaySpeed * 0.1;
-
-                // 循环重置
-                if (positions[i * 3 + 1] < -30) {
-                    positions[i * 3 + 1] = 30;
-                    positions[i * 3] = THREE.MathUtils.randFloatSpread(100);
-                    positions[i * 3 + 2] = THREE.MathUtils.randFloatSpread(60);
-                }
-            }
-            snowSystem.geometry.attributes.position.needsUpdate = true;
-        }
-
-        class Particle {
-            constructor(mesh, type, isDust = false) {
-                this.mesh = mesh;
-                this.type = type;
-                this.isDust = isDust;
-
-                this.posTree = new THREE.Vector3();
-                this.posScatter = new THREE.Vector3();
-                this.baseScale = mesh.scale.x;
-
-                const speedMult = (type === 'PHOTO') ? 0.3 : 2.0;
-
-                this.spinSpeed = new THREE.Vector3(
-                    (Math.random() - 0.5) * speedMult,
-                    (Math.random() - 0.5) * speedMult,
-                    (Math.random() - 0.5) * speedMult
-                );
-
-                this.calculatePositions();
-            }
-
-            calculatePositions() {
-                if (this.type === 'PHOTO') {
-                    this.posTree.set(0, 0, 0);
-                    const rScatter = 8 + Math.random() * 12;
+                    let rScatter = this.isDust ? (12 + Math.random() * 20) : (8 + Math.random() * 12);
                     const theta = Math.random() * Math.PI * 2;
                     const phi = Math.acos(2 * Math.random() - 1);
                     this.posScatter.set(
@@ -2807,494 +2904,470 @@
                         rScatter * Math.sin(phi) * Math.sin(theta),
                         rScatter * Math.cos(phi)
                     );
+                }
+
+                update(dt, mode, focusTargetMesh) {
+                    let target = this.posTree;
+
+                    if (mode === 'SCATTER') target = this.posScatter;
+                    else if (mode === 'FOCUS') {
+                        if (this.mesh === focusTargetMesh) {
+                            const desiredWorldPos = new THREE.Vector3(0, 2, 35);
+                            const invMatrix = new THREE.Matrix4().copy(mainGroup.matrixWorld).invert();
+                            target = desiredWorldPos.applyMatrix4(invMatrix);
+                        } else {
+                            target = this.posScatter;
+                        }
+                    }
+
+                    const lerpSpeed = (mode === 'FOCUS' && this.mesh === focusTargetMesh) ? 5.0 : 2.0;
+                    this.mesh.position.lerp(target, lerpSpeed * dt);
+
+                    if (mode === 'SCATTER') {
+                        this.mesh.rotation.x += this.spinSpeed.x * dt;
+                        this.mesh.rotation.y += this.spinSpeed.y * dt;
+                        this.mesh.rotation.z += this.spinSpeed.z * dt;
+                    } else if (mode === 'TREE') {
+                        if (this.type === 'PHOTO') {
+                            this.mesh.lookAt(0, this.mesh.position.y, 0);
+                            this.mesh.rotateY(Math.PI);
+                        } else {
+                            this.mesh.rotation.x = THREE.MathUtils.lerp(this.mesh.rotation.x, 0, dt);
+                            this.mesh.rotation.z = THREE.MathUtils.lerp(this.mesh.rotation.z, 0, dt);
+                            this.mesh.rotation.y += 0.5 * dt;
+                        }
+                    }
+
+                    if (mode === 'FOCUS' && this.mesh === focusTargetMesh) {
+                        this.mesh.lookAt(camera.position);
+                    }
+
+                    let s = this.baseScale;
+                    if (this.isDust) {
+                        s = this.baseScale * (0.8 + 0.4 * Math.sin(clock.elapsedTime * 4 + this.mesh.id));
+                        if (mode === 'TREE') s = 0;
+                    } else if (mode === 'SCATTER' && this.type === 'PHOTO') {
+                        s = this.baseScale * 2.5;
+                    } else if (mode === 'FOCUS') {
+                        if (this.mesh === focusTargetMesh) s = 4.5;
+                        else s = this.baseScale * 0.8;
+                    }
+
+                    this.mesh.scale.lerp(new THREE.Vector3(s, s, s), 4 * dt);
+                }
+            }
+
+            function updatePhotoLayout() {
+                const photos = particleSystem.filter(p => p.type === 'PHOTO');
+                const count = photos.length;
+                if (count === 0) return;
+
+                const h = CONFIG.particles.treeHeight * 0.9;
+                const bottomY = -h / 2;
+                const stepY = h / count;
+                const loops = 3;
+
+                photos.forEach((p, i) => {
+                    const y = bottomY + stepY * i + stepY / 2;
+                    const fullH = CONFIG.particles.treeHeight;
+                    const normalizedH = (y + fullH / 2) / fullH;
+
+                    let rMax = CONFIG.particles.treeRadius * (1.0 - normalizedH);
+                    if (rMax < 1.0) rMax = 1.0;
+
+                    const r = rMax + 3.0;
+                    const angle = normalizedH * Math.PI * 2 * loops + (Math.PI / 4);
+
+                    p.posTree.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
+                });
+            }
+
+            function createParticles() {
+                const sphereGeo = new THREE.SphereGeometry(0.5, 32, 32);
+                const boxGeo = new THREE.BoxGeometry(0.55, 0.55, 0.55);
+                const curve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(0, -0.5, 0), new THREE.Vector3(0, 0.3, 0),
+                    new THREE.Vector3(0.1, 0.5, 0), new THREE.Vector3(0.3, 0.4, 0)
+                ]);
+                const candyGeo = new THREE.TubeGeometry(curve, 16, 0.08, 8, false);
+
+                const goldMat = new THREE.MeshStandardMaterial({
+                    color: CONFIG.colors.champagneGold,
+                    metalness: 1.0, roughness: 0.1,
+                    envMapIntensity: 2.0,
+                    emissive: 0x443300,
+                    emissiveIntensity: 0.3
+                });
+
+                const greenMat = new THREE.MeshStandardMaterial({
+                    color: CONFIG.colors.deepGreen,
+                    metalness: 0.2, roughness: 0.8,
+                    emissive: 0x002200,
+                    emissiveIntensity: 0.2
+                });
+
+                const redMat = new THREE.MeshPhysicalMaterial({
+                    color: CONFIG.colors.accentRed,
+                    metalness: 0.3, roughness: 0.2, clearcoat: 1.0,
+                    emissive: 0x330000
+                });
+
+                const candyMat = new THREE.MeshStandardMaterial({ map: caneTexture, roughness: 0.4 });
+
+                for (let i = 0; i < CONFIG.particles.count; i++) {
+                    const rand = Math.random();
+                    let mesh, type;
+
+                    if (rand < 0.40) {
+                        mesh = new THREE.Mesh(boxGeo, greenMat);
+                        type = 'BOX';
+                    } else if (rand < 0.70) {
+                        mesh = new THREE.Mesh(boxGeo, goldMat);
+                        type = 'GOLD_BOX';
+                    } else if (rand < 0.92) {
+                        mesh = new THREE.Mesh(sphereGeo, goldMat);
+                        type = 'GOLD_SPHERE';
+                    } else if (rand < 0.97) {
+                        mesh = new THREE.Mesh(sphereGeo, redMat);
+                        type = 'RED';
+                    } else {
+                        mesh = new THREE.Mesh(candyGeo, candyMat);
+                        type = 'CANE';
+                    }
+
+                    const s = 0.4 + Math.random() * 0.5;
+                    mesh.scale.set(s, s, s);
+                    mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+
+                    mainGroup.add(mesh);
+                    particleSystem.push(new Particle(mesh, type, false));
+                }
+
+                // Star
+                const starShape = new THREE.Shape();
+                const points = 5;
+                const outerRadius = 1.5;
+                const innerRadius = 0.7;
+
+                for (let i = 0; i < points * 2; i++) {
+                    const angle = (i * Math.PI) / points + Math.PI / 2;
+                    const r = (i % 2 === 0) ? outerRadius : innerRadius;
+                    const x = Math.cos(angle) * r;
+                    const y = Math.sin(angle) * r;
+                    if (i === 0) starShape.moveTo(x, y);
+                    else starShape.lineTo(x, y);
+                }
+                starShape.closePath();
+
+                const starGeo = new THREE.ExtrudeGeometry(starShape, {
+                    depth: 0.4,
+                    bevelEnabled: true,
+                    bevelThickness: 0.1,
+                    bevelSize: 0.1,
+                    bevelSegments: 2
+                });
+                starGeo.center();
+
+                const starMat = new THREE.MeshStandardMaterial({
+                    color: 0xffdd88, emissive: 0xffaa00, emissiveIntensity: 1.0,
+                    metalness: 1.0, roughness: 0
+                });
+                const star = new THREE.Mesh(starGeo, starMat);
+                star.position.set(0, CONFIG.particles.treeHeight / 2 + 1.2, 0);
+                mainGroup.add(star);
+
+                mainGroup.add(photoMeshGroup);
+            }
+
+            function createDust() {
+                const geo = new THREE.TetrahedronGeometry(0.08, 0);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xffeebb, transparent: true, opacity: 0.8 });
+
+                for (let i = 0; i < CONFIG.particles.dustCount; i++) {
+                    const mesh = new THREE.Mesh(geo, mat);
+                    mesh.scale.setScalar(0.5 + Math.random());
+                    mainGroup.add(mesh);
+                    particleSystem.push(new Particle(mesh, 'DUST', true));
+                }
+            }
+
+            function addPhotoToScene(texture) {
+                const frameGeo = new THREE.BoxGeometry(1.4, 1.4, 0.05);
+                const frameMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.champagneGold, metalness: 1.0, roughness: 0.1 });
+                const frame = new THREE.Mesh(frameGeo, frameMat);
+
+                let width = 1.2;
+                let height = 1.2;
+
+                if (texture.image) {
+                    const aspect = texture.image.width / texture.image.height;
+                    if (aspect > 1) {
+                        height = width / aspect;
+                    } else {
+                        width = height * aspect;
+                    }
+                }
+
+                const photoGeo = new THREE.PlaneGeometry(width, height);
+                const photoMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+                const photo = new THREE.Mesh(photoGeo, photoMat);
+                photo.position.z = 0.04;
+
+                const group = new THREE.Group();
+                group.add(frame);
+                group.add(photo);
+
+                frame.scale.set(width / 1.2, height / 1.2, 1);
+
+                const s = 0.8;
+                group.scale.set(s, s, s);
+
+                photoMeshGroup.add(group);
+                particleSystem.push(new Particle(group, 'PHOTO', false));
+
+                updatePhotoLayout();
+            }
+
+            function handleImageUpload(e) {
+                const files = e.target.files;
+                if (!files.length) return;
+
+                // Check if user is logged in and has premium
+                if (!currentUser) {
+                    alert("请先登录");
+                    return;
+                }
+                if (!currentUser.is_vip) {
+                    alert("请先购买Premium产品以解锁上传功能");
                     return;
                 }
 
-                const h = CONFIG.particles.treeHeight;
-                const halfH = h / 2;
-                let t = Math.random();
-                t = Math.pow(t, 0.8);
-                const y = (t * h) - halfH;
+                const promises = [];
 
-                let rMax = CONFIG.particles.treeRadius * (1.0 - t);
-                if (rMax < 0.5) rMax = 0.5;
+                Array.from(files).forEach(f => {
+                    if (!f.type.startsWith('image/')) return;
 
-                const angle = t * 50 * Math.PI + Math.random() * Math.PI;
-                const r = rMax * (0.8 + Math.random() * 0.4);
-                this.posTree.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
+                    const p = new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            const base64 = ev.target.result;
 
-                let rScatter = this.isDust ? (12 + Math.random() * 20) : (8 + Math.random() * 12);
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos(2 * Math.random() - 1);
-                this.posScatter.set(
-                    rScatter * Math.sin(phi) * Math.cos(theta),
-                    rScatter * Math.sin(phi) * Math.sin(theta),
-                    rScatter * Math.cos(phi)
-                );
-            }
+                            // 1. Add to Scene
+                            new THREE.TextureLoader().load(base64, (t) => {
+                                t.colorSpace = THREE.SRGBColorSpace;
+                                addPhotoToScene(t);
+                            });
 
-            update(dt, mode, focusTargetMesh) {
-                let target = this.posTree;
-
-                if (mode === 'SCATTER') target = this.posScatter;
-                else if (mode === 'FOCUS') {
-                    if (this.mesh === focusTargetMesh) {
-                        const desiredWorldPos = new THREE.Vector3(0, 2, 35);
-                        const invMatrix = new THREE.Matrix4().copy(mainGroup.matrixWorld).invert();
-                        target = desiredWorldPos.applyMatrix4(invMatrix);
-                    } else {
-                        target = this.posScatter;
-                    }
-                }
-
-                const lerpSpeed = (mode === 'FOCUS' && this.mesh === focusTargetMesh) ? 5.0 : 2.0;
-                this.mesh.position.lerp(target, lerpSpeed * dt);
-
-                if (mode === 'SCATTER') {
-                    this.mesh.rotation.x += this.spinSpeed.x * dt;
-                    this.mesh.rotation.y += this.spinSpeed.y * dt;
-                    this.mesh.rotation.z += this.spinSpeed.z * dt;
-                } else if (mode === 'TREE') {
-                    if (this.type === 'PHOTO') {
-                        this.mesh.lookAt(0, this.mesh.position.y, 0);
-                        this.mesh.rotateY(Math.PI);
-                    } else {
-                        this.mesh.rotation.x = THREE.MathUtils.lerp(this.mesh.rotation.x, 0, dt);
-                        this.mesh.rotation.z = THREE.MathUtils.lerp(this.mesh.rotation.z, 0, dt);
-                        this.mesh.rotation.y += 0.5 * dt;
-                    }
-                }
-
-                if (mode === 'FOCUS' && this.mesh === focusTargetMesh) {
-                    this.mesh.lookAt(camera.position);
-                }
-
-                let s = this.baseScale;
-                if (this.isDust) {
-                    s = this.baseScale * (0.8 + 0.4 * Math.sin(clock.elapsedTime * 4 + this.mesh.id));
-                    if (mode === 'TREE') s = 0;
-                } else if (mode === 'SCATTER' && this.type === 'PHOTO') {
-                    s = this.baseScale * 2.5;
-                } else if (mode === 'FOCUS') {
-                    if (this.mesh === focusTargetMesh) s = 4.5;
-                    else s = this.baseScale * 0.8;
-                }
-
-                this.mesh.scale.lerp(new THREE.Vector3(s, s, s), 4 * dt);
-            }
-        }
-
-        function updatePhotoLayout() {
-            const photos = particleSystem.filter(p => p.type === 'PHOTO');
-            const count = photos.length;
-            if (count === 0) return;
-
-            const h = CONFIG.particles.treeHeight * 0.9;
-            const bottomY = -h / 2;
-            const stepY = h / count;
-            const loops = 3;
-
-            photos.forEach((p, i) => {
-                const y = bottomY + stepY * i + stepY / 2;
-                const fullH = CONFIG.particles.treeHeight;
-                const normalizedH = (y + fullH / 2) / fullH;
-
-                let rMax = CONFIG.particles.treeRadius * (1.0 - normalizedH);
-                if (rMax < 1.0) rMax = 1.0;
-
-                const r = rMax + 3.0;
-                const angle = normalizedH * Math.PI * 2 * loops + (Math.PI / 4);
-
-                p.posTree.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
-            });
-        }
-
-        function createParticles() {
-            const sphereGeo = new THREE.SphereGeometry(0.5, 32, 32);
-            const boxGeo = new THREE.BoxGeometry(0.55, 0.55, 0.55);
-            const curve = new THREE.CatmullRomCurve3([
-                new THREE.Vector3(0, -0.5, 0), new THREE.Vector3(0, 0.3, 0),
-                new THREE.Vector3(0.1, 0.5, 0), new THREE.Vector3(0.3, 0.4, 0)
-            ]);
-            const candyGeo = new THREE.TubeGeometry(curve, 16, 0.08, 8, false);
-
-            const goldMat = new THREE.MeshStandardMaterial({
-                color: CONFIG.colors.champagneGold,
-                metalness: 1.0, roughness: 0.1,
-                envMapIntensity: 2.0,
-                emissive: 0x443300,
-                emissiveIntensity: 0.3
-            });
-
-            const greenMat = new THREE.MeshStandardMaterial({
-                color: CONFIG.colors.deepGreen,
-                metalness: 0.2, roughness: 0.8,
-                emissive: 0x002200,
-                emissiveIntensity: 0.2
-            });
-
-            const redMat = new THREE.MeshPhysicalMaterial({
-                color: CONFIG.colors.accentRed,
-                metalness: 0.3, roughness: 0.2, clearcoat: 1.0,
-                emissive: 0x330000
-            });
-
-            const candyMat = new THREE.MeshStandardMaterial({ map: caneTexture, roughness: 0.4 });
-
-            for (let i = 0; i < CONFIG.particles.count; i++) {
-                const rand = Math.random();
-                let mesh, type;
-
-                if (rand < 0.40) {
-                    mesh = new THREE.Mesh(boxGeo, greenMat);
-                    type = 'BOX';
-                } else if (rand < 0.70) {
-                    mesh = new THREE.Mesh(boxGeo, goldMat);
-                    type = 'GOLD_BOX';
-                } else if (rand < 0.92) {
-                    mesh = new THREE.Mesh(sphereGeo, goldMat);
-                    type = 'GOLD_SPHERE';
-                } else if (rand < 0.97) {
-                    mesh = new THREE.Mesh(sphereGeo, redMat);
-                    type = 'RED';
-                } else {
-                    mesh = new THREE.Mesh(candyGeo, candyMat);
-                    type = 'CANE';
-                }
-
-                const s = 0.4 + Math.random() * 0.5;
-                mesh.scale.set(s, s, s);
-                mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-
-                mainGroup.add(mesh);
-                particleSystem.push(new Particle(mesh, type, false));
-            }
-
-            // Star
-            const starShape = new THREE.Shape();
-            const points = 5;
-            const outerRadius = 1.5;
-            const innerRadius = 0.7;
-
-            for (let i = 0; i < points * 2; i++) {
-                const angle = (i * Math.PI) / points + Math.PI / 2;
-                const r = (i % 2 === 0) ? outerRadius : innerRadius;
-                const x = Math.cos(angle) * r;
-                const y = Math.sin(angle) * r;
-                if (i === 0) starShape.moveTo(x, y);
-                else starShape.lineTo(x, y);
-            }
-            starShape.closePath();
-
-            const starGeo = new THREE.ExtrudeGeometry(starShape, {
-                depth: 0.4,
-                bevelEnabled: true,
-                bevelThickness: 0.1,
-                bevelSize: 0.1,
-                bevelSegments: 2
-            });
-            starGeo.center();
-
-            const starMat = new THREE.MeshStandardMaterial({
-                color: 0xffdd88, emissive: 0xffaa00, emissiveIntensity: 1.0,
-                metalness: 1.0, roughness: 0
-            });
-            const star = new THREE.Mesh(starGeo, starMat);
-            star.position.set(0, CONFIG.particles.treeHeight / 2 + 1.2, 0);
-            mainGroup.add(star);
-
-            mainGroup.add(photoMeshGroup);
-        }
-
-        function createDust() {
-            const geo = new THREE.TetrahedronGeometry(0.08, 0);
-            const mat = new THREE.MeshBasicMaterial({ color: 0xffeebb, transparent: true, opacity: 0.8 });
-
-            for (let i = 0; i < CONFIG.particles.dustCount; i++) {
-                const mesh = new THREE.Mesh(geo, mat);
-                mesh.scale.setScalar(0.5 + Math.random());
-                mainGroup.add(mesh);
-                particleSystem.push(new Particle(mesh, 'DUST', true));
-            }
-        }
-
-        function addPhotoToScene(texture) {
-            const frameGeo = new THREE.BoxGeometry(1.4, 1.4, 0.05);
-            const frameMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.champagneGold, metalness: 1.0, roughness: 0.1 });
-            const frame = new THREE.Mesh(frameGeo, frameMat);
-
-            let width = 1.2;
-            let height = 1.2;
-
-            if (texture.image) {
-                const aspect = texture.image.width / texture.image.height;
-                if (aspect > 1) {
-                    height = width / aspect;
-                } else {
-                    width = height * aspect;
-                }
-            }
-
-            const photoGeo = new THREE.PlaneGeometry(width, height);
-            const photoMat = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-            const photo = new THREE.Mesh(photoGeo, photoMat);
-            photo.position.z = 0.04;
-
-            const group = new THREE.Group();
-            group.add(frame);
-            group.add(photo);
-
-            frame.scale.set(width / 1.2, height / 1.2, 1);
-
-            const s = 0.8;
-            group.scale.set(s, s, s);
-
-            photoMeshGroup.add(group);
-            particleSystem.push(new Particle(group, 'PHOTO', false));
-
-            updatePhotoLayout();
-        }
-
-        function handleImageUpload(e) {
-            const files = e.target.files;
-            if (!files.length) return;
-
-            // Check if user is logged in and has premium
-            if (!currentUser) {
-                alert("请先登录");
-                return;
-            }
-            if (!currentUser.is_vip) {
-                alert("请先购买Premium产品以解锁上传功能");
-                return;
-            }
-
-            const promises = [];
-
-            Array.from(files).forEach(f => {
-                if (!f.type.startsWith('image/')) return;
-
-                const p = new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        const base64 = ev.target.result;
-
-                        // 1. Add to Scene
-                        new THREE.TextureLoader().load(base64, (t) => {
-                            t.colorSpace = THREE.SRGBColorSpace;
-                            addPhotoToScene(t);
-                        });
-
-                        // 2. Prepare for Storage
-                        resolve({ name: f.name, data: base64 });
-                    }
-                    reader.readAsDataURL(f);
-                });
-                promises.push(p);
-            });
-
-            // Save to LocalForage with user isolation
-            Promise.all(promises).then(async (newImages) => {
-                const currentImages = await Storage.loadImages(currentUser.openid);
-                const updated = [...currentImages, ...newImages];
-                await Storage.saveImages(currentUser.openid, updated);
-            });
-        }
-
-        // --- MEDIAPIPE (Adaptive Fix) ---
-        async function initMediaPipe() {
-            video = document.getElementById('webcam');
-
-            // Adjust to get best available resolution if possible
-            const constraints = {
-                video: {
-                    width: { ideal: 640 },
-                    height: { ideal: 480 },
-                    frameRate: { ideal: 30 }
-                }
-            };
-
-            const vision = await FilesetResolver.forVisionTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-            );
-            handLandmarker = await HandLandmarker.createFromOptions(vision, {
-                baseOptions: {
-                    // modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-                    modelAssetPath: `./hand_landmarker.task`,
-                    delegate: "GPU"
-                },
-                runningMode: "VIDEO",
-                numHands: 1
-            });
-
-            if (navigator.mediaDevices?.getUserMedia) {
-                try {
-                    // Method A: Try Ideal Config
-                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    video.srcObject = stream;
-                    video.addEventListener("loadeddata", predictWebcam);
-                    debugInfo.innerText = "Webcam active. Show hand.";
-                    document.getElementById('webcam-wrapper').style.display = 'block';
-                } catch (e) {
-                    // Method B: Fallback to any camera
-                    console.warn("Preferred camera failed, trying fallback...", e);
-                    try {
-                        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        video.srcObject = fallbackStream;
-                        video.addEventListener("loadeddata", predictWebcam);
-                        debugInfo.innerText = "Fallback Webcam active.";
-                        document.getElementById('webcam-wrapper').style.display = 'block';
-                    } catch (err2) {
-                        console.error("All webcam attempts failed", err2);
-                        debugInfo.innerText = "Camera not found. Click '开启摄像头' to retry.";
-
-                        // Diagnostic: Check available devices
-                        try {
-                            const devices = await navigator.mediaDevices.enumerateDevices();
-                            const videoInputs = devices.filter(d => d.kind === 'videoinput');
-                            console.log("Device Enumeration Check:",
-                                videoInputs.length > 0 ? `Found ${videoInputs.length} cameras` : "NO CAMERAS FOUND",
-                                devices
-                            );
-                            if (videoInputs.length === 0) {
-                                alert("系统检测不到任何摄像头设备！请检查电脑/手机是否有摄像头，或是否在系统设置中禁用了浏览器的摄像头权限。");
-                            }
-                        } catch (enumErr) {
-                            console.error("Enumeration failed:", enumErr);
+                            // 2. Prepare for Storage
+                            resolve({ name: f.name, data: base64 });
                         }
+                        reader.readAsDataURL(f);
+                    });
+                    promises.push(p);
+                });
 
+                // Save to LocalForage with user isolation
+                Promise.all(promises).then(async (newImages) => {
+                    const currentImages = await Storage.loadImages(currentUser.openid);
+                    const updated = [...currentImages, ...newImages];
+                    await Storage.saveImages(currentUser.openid, updated);
+                });
+            }
 
+            // --- MEDIAPIPE (Adaptive Fix) ---
+            async function initMediaPipe() {
+                video = document.getElementById('webcam');
+
+                // Adjust to get best available resolution if possible
+                const constraints = {
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        frameRate: { ideal: 30 }
                     }
-                }
-            } else {
-                debugInfo.innerText = "Browser not supported.";
-            }
-        }
+                };
+
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+                );
+                handLandmarker = await HandLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        // modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                        modelAssetPath: `./hand_landmarker.task`,
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numHands: 1
+                });
+
+                if (navigator.mediaDevices?.getUserMedia) {
+                    try {
+                        // Method A: Try Ideal Config
+                        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                        video.srcObject = stream;
+                        video.addEventListener("loadeddata", predictWebcam);
+                        debugInfo.innerText = "Webcam active. Show hand.";
+                        document.getElementById('webcam-wrapper').style.display = 'block';
+                    } catch (e) {
+                        // Method B: Fallback to any camera
+                        console.warn("Preferred camera failed, trying fallback...", e);
+                        try {
+                            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                            video.srcObject = fallbackStream;
+                            video.addEventListener("loadeddata", predictWebcam);
+                            debugInfo.innerText = "Fallback Webcam active.";
+                            document.getElementById('webcam-wrapper').style.display = 'block';
+                        } catch (err2) {
+                            console.error("All webcam attempts failed", err2);
+                            debugInfo.innerText = "Camera not found. Click '开启摄像头' to retry.";
+
+                            // Diagnostic: Check available devices
+                            try {
+                                const devices = await navigator.mediaDevices.enumerateDevices();
+                                const videoInputs = devices.filter(d => d.kind === 'videoinput');
+                                console.log("Device Enumeration Check:",
+                                    videoInputs.length > 0 ? `Found ${videoInputs.length} cameras` : "NO CAMERAS FOUND",
+                                    devices
+                                );
+                                if (videoInputs.length === 0) {
+                                    alert("系统检测不到任何摄像头设备！请检查电脑/手机是否有摄像头，或是否在系统设置中禁用了浏览器的摄像头权限。");
+                                }
+                            } catch (enumErr) {
+                                console.error("Enumeration failed:", enumErr);
+                            }
 
 
-        let lastVideoTime = -1;
-        async function predictWebcam() {
-            if (video.currentTime !== lastVideoTime) {
-                lastVideoTime = video.currentTime;
-                if (handLandmarker) {
-                    const result = handLandmarker.detectForVideo(video, performance.now());
-                    processGestures(result);
-                }
-            }
-            requestAnimationFrame(predictWebcam);
-        }
-
-        // 修复核心：使用相对比例而非绝对距离
-        function processGestures(result) {
-            if (result.landmarks && result.landmarks.length > 0) {
-                STATE.hand.detected = true;
-                const lm = result.landmarks[0];
-                STATE.hand.x = (lm[9].x - 0.5) * 2;
-                STATE.hand.y = (lm[9].y - 0.5) * 2;
-
-                const thumb = lm[4];
-                const index = lm[8];
-                const wrist = lm[0];
-                const middleMCP = lm[9]; // 中指指根 (Knuckle)
-
-                // 1. 计算手掌基准大小 (手腕到中指指根的距离)
-                const handSize = Math.hypot(middleMCP.x - wrist.x, middleMCP.y - wrist.y);
-                if (handSize < 0.02) return;
-
-                // 2. 计算手指尖端的平均伸展距离
-                const tips = [lm[8], lm[12], lm[16], lm[20]];
-                let avgTipDist = 0;
-                tips.forEach(t => avgTipDist += Math.hypot(t.x - wrist.x, t.y - wrist.y));
-                avgTipDist /= 4;
-
-                // 3. 计算捏合距离 (拇指到食指)
-                const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
-
-                // 4. 计算相对比例
-                const extensionRatio = avgTipDist / handSize;
-                const pinchRatio = pinchDist / handSize;
-
-                // 调试显示
-                debugInfo.innerText = `Size: ${handSize.toFixed(2)} | Ext: ${extensionRatio.toFixed(2)} | Pinch: ${pinchRatio.toFixed(2)} | Mode: ${STATE.mode}`;
-
-                // 5. 状态判定优化
-                // 优先检查握拳 (Tree)，防止因为大拇指靠近食指而被误判为 Focus
-                if (extensionRatio < 1.5) {
-                    // 握拳：变成树 (阈值从 1.4 提高到 1.5，更容易触发)
-                    STATE.mode = 'TREE';
-                    STATE.focusTarget = null;
-                } else if (pinchRatio < 0.35) {
-                    // 捏合：进入聚焦模式 (仅当没有握拳时才检查)
-                    if (STATE.mode !== 'FOCUS') {
-                        STATE.mode = 'FOCUS';
-                        const photos = particleSystem.filter(p => p.type === 'PHOTO');
-                        if (photos.length) STATE.focusTarget = photos[Math.floor(Math.random() * photos.length)].mesh;
+                        }
                     }
-                } else if (extensionRatio > 1.7) {
-                    // 张开：散开照片
-                    STATE.mode = 'SCATTER';
-                    STATE.focusTarget = null;
-                }
-            } else {
-                STATE.hand.detected = false;
-                debugInfo.innerText = "No hand detected";
-            }
-        }
-
-        function setupEvents() {
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                composer.setSize(window.innerWidth, window.innerHeight);
-            });
-
-            document.getElementById('file-input').addEventListener('change', handleImageUpload);
-
-            window.addEventListener('keydown', (e) => {
-                if (e.key.toLowerCase() === 'h') {
-                    const controls = document.querySelector('.controls-wrapper');
-                    if (controls) controls.classList.toggle('ui-hidden');
-                    const webcam = document.getElementById('webcam-wrapper');
-                    if (webcam) webcam.classList.toggle('ui-hidden');
-                }
-            });
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const dt = clock.getDelta();
-
-            // Rotation Logic
-            if (STATE.mode === 'SCATTER' && STATE.hand.detected) {
-                const targetRotY = STATE.hand.x * Math.PI * 0.9;
-                const targetRotX = STATE.hand.y * Math.PI * 0.25;
-                STATE.rotation.y += (targetRotY - STATE.rotation.y) * 3.0 * dt;
-                STATE.rotation.x += (targetRotX - STATE.rotation.x) * 3.0 * dt;
-            } else {
-                if (STATE.mode === 'TREE') {
-                    STATE.rotation.y += 0.3 * dt;
-                    STATE.rotation.x += (0 - STATE.rotation.x) * 2.0 * dt;
                 } else {
-                    STATE.rotation.y += 0.1 * dt;
+                    debugInfo.innerText = "Browser not supported.";
                 }
             }
 
-            mainGroup.rotation.y = STATE.rotation.y;
-            mainGroup.rotation.x = STATE.rotation.x;
 
-            particleSystem.forEach(p => p.update(dt, STATE.mode, STATE.focusTarget));
+            let lastVideoTime = -1;
+            async function predictWebcam() {
+                if (video.currentTime !== lastVideoTime) {
+                    lastVideoTime = video.currentTime;
+                    if (handLandmarker) {
+                        const result = handLandmarker.detectForVideo(video, performance.now());
+                        processGestures(result);
+                    }
+                }
+                requestAnimationFrame(predictWebcam);
+            }
 
-            // 更新雪花
-            updateSnow();
+            // 修复核心：使用相对比例而非绝对距离
+            function processGestures(result) {
+                if (result.landmarks && result.landmarks.length > 0) {
+                    STATE.hand.detected = true;
+                    const lm = result.landmarks[0];
+                    STATE.hand.x = (lm[9].x - 0.5) * 2;
+                    STATE.hand.y = (lm[9].y - 0.5) * 2;
+
+                    const thumb = lm[4];
+                    const index = lm[8];
+                    const wrist = lm[0];
+                    const middleMCP = lm[9]; // 中指指根 (Knuckle)
+
+                    // 1. 计算手掌基准大小 (手腕到中指指根的距离)
+                    const handSize = Math.hypot(middleMCP.x - wrist.x, middleMCP.y - wrist.y);
+                    if (handSize < 0.02) return;
+
+                    // 2. 计算手指尖端的平均伸展距离
+                    const tips = [lm[8], lm[12], lm[16], lm[20]];
+                    let avgTipDist = 0;
+                    tips.forEach(t => avgTipDist += Math.hypot(t.x - wrist.x, t.y - wrist.y));
+                    avgTipDist /= 4;
+
+                    // 3. 计算捏合距离 (拇指到食指)
+                    const pinchDist = Math.hypot(thumb.x - index.x, thumb.y - index.y);
+
+                    // 4. 计算相对比例
+                    const extensionRatio = avgTipDist / handSize;
+                    const pinchRatio = pinchDist / handSize;
+
+                    // 调试显示
+                    debugInfo.innerText = `Size: ${handSize.toFixed(2)} | Ext: ${extensionRatio.toFixed(2)} | Pinch: ${pinchRatio.toFixed(2)} | Mode: ${STATE.mode}`;
+
+                    // 5. 状态判定优化
+                    // 优先检查握拳 (Tree)，防止因为大拇指靠近食指而被误判为 Focus
+                    if (extensionRatio < 1.5) {
+                        // 握拳：变成树 (阈值从 1.4 提高到 1.5，更容易触发)
+                        STATE.mode = 'TREE';
+                        STATE.focusTarget = null;
+                    } else if (pinchRatio < 0.35) {
+                        // 捏合：进入聚焦模式 (仅当没有握拳时才检查)
+                        if (STATE.mode !== 'FOCUS') {
+                            STATE.mode = 'FOCUS';
+                            const photos = particleSystem.filter(p => p.type === 'PHOTO');
+                            if (photos.length) STATE.focusTarget = photos[Math.floor(Math.random() * photos.length)].mesh;
+                        }
+                    } else if (extensionRatio > 1.7) {
+                        // 张开：散开照片
+                        STATE.mode = 'SCATTER';
+                        STATE.focusTarget = null;
+                    }
+                } else {
+                    STATE.hand.detected = false;
+                    debugInfo.innerText = "No hand detected";
+                }
+            }
+
+            function setupEvents() {
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    composer.setSize(window.innerWidth, window.innerHeight);
+                });
+
+                document.getElementById('file-input').addEventListener('change', handleImageUpload);
+
+                window.addEventListener('keydown', (e) => {
+                    if (e.key.toLowerCase() === 'h') {
+                        const controls = document.querySelector('.controls-wrapper');
+                        if (controls) controls.classList.toggle('ui-hidden');
+                        const webcam = document.getElementById('webcam-wrapper');
+                        if (webcam) webcam.classList.toggle('ui-hidden');
+                    }
+                });
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                const dt = clock.getDelta();
+
+                // Rotation Logic
+                if (STATE.mode === 'SCATTER' && STATE.hand.detected) {
+                    const targetRotY = STATE.hand.x * Math.PI * 0.9;
+                    const targetRotX = STATE.hand.y * Math.PI * 0.25;
+                    STATE.rotation.y += (targetRotY - STATE.rotation.y) * 3.0 * dt;
+                    STATE.rotation.x += (targetRotX - STATE.rotation.x) * 3.0 * dt;
+                } else {
+                    if (STATE.mode === 'TREE') {
+                        STATE.rotation.y += 0.3 * dt;
+                        STATE.rotation.x += (0 - STATE.rotation.x) * 2.0 * dt;
+                    } else {
+                        STATE.rotation.y += 0.1 * dt;
+                    }
+                }
+
+                mainGroup.rotation.y = STATE.rotation.y;
+                mainGroup.rotation.x = STATE.rotation.x;
+
+                particleSystem.forEach(p => p.update(dt, STATE.mode, STATE.focusTarget));
+
+                // 更新雪花
+                updateSnow();
 
 
 
-            composer.render();
-        }
+                composer.render();
+            }
 
-        init();
-    </script>
+            init();
+        </script>
 </body>
 
 </html>

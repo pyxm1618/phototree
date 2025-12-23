@@ -837,58 +837,102 @@
             transform: translateY(-2px);
         }
 
-        /* --- WeChat Login Modal --- */
+        /* --- Premium Glassmorphism Login Modal --- */
         .wx-login-modal {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, #0f1520 0%, #1a2332 100%);
-            border: 1px solid #d4af37;
-            padding: 30px;
-            z-index: 10000;
-            border-radius: 12px;
-            box-shadow: 0 0 50px rgba(212, 175, 55, 0.4);
+            /* Glass Effect */
+            background: rgba(20, 30, 50, 0.65);
+            /* Deep Blue/Black Tint */
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            /* Gold border */
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.8),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            /* Inner glow */
+            border-radius: 20px;
+            padding: 40px;
+            z-index: 10001;
             text-align: center;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.4s ease;
+            width: 400px;
+            animation: modalFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
 
         .wx-login-close {
             position: absolute;
-            top: 10px;
-            right: 15px;
-            color: #666;
-            font-size: 24px;
+            top: 15px;
+            right: 20px;
+            color: rgba(212, 175, 55, 0.6);
             cursor: pointer;
-            transition: color 0.3s;
+            font-size: 24px;
+            font-weight: 300;
+            transition: all 0.3s;
         }
 
         .wx-login-close:hover {
             color: #d4af37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+            transform: rotate(90deg);
+        }
+
+        .wx-login-title {
+            color: #d4af37;
+            font-family: "Times New Roman", serif;
+            /* Elegant Serif */
+            font-size: 28px;
+            font-style: italic;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            letter-spacing: 1px;
+        }
+
+        /* QR Container styling for structure */
+        #login_container {
+            margin: 0 auto;
+            border-radius: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            /* Subtle backdrop for QR */
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .wx-login-benefits {
             margin-top: 20px;
+        }
+
+        /* Desktop specific text style */
+        .wx-login-benefit-item {
+            color: rgba(230, 230, 230, 0.9);
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .wx-login-scan-tip {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #d4af37;
             border-top: 1px solid rgba(212, 175, 55, 0.2);
             padding-top: 15px;
-            text-align: left;
-            display: inline-block;
-        }
-
-        .wx-login-benefit-item {
-            color: #ccc;
-            font-size: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            letter-spacing: 1px;
-        }
-
-        .wx-login-benefit-item span {
-            color: #d4af37;
+            font-weight: 500;
         }
 
         /* Mobile Bottom Navbar - Hidden by default */
@@ -1017,19 +1061,32 @@
                 text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
             }
 
-            /* Use consistent glassmorphism for modal */
+            /* Use consistent glassmorphism for modal on Mobile */
             .wx-login-modal {
-                background: rgba(10, 15, 20, 0.85);
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(212, 175, 55, 0.3);
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-                border-radius: 16px;
-                width: 80%;
-                /* Slightly smaller */
-                max-width: 320px;
+                /* Inherits background/backdrop from main class, just reset geometry */
+                width: 85%;
+                max-width: 340px;
+                padding: 25px 20px;
+                background: rgba(20, 30, 50, 0.75);
+                /* Slightly more opaque on mobile for legibility */
+                border: 1px solid rgba(212, 175, 55, 0.4);
             }
 
-            /* Hide desktop login button on mobile */
+            .wx-login-title {
+                font-size: 24px;
+                /* Adjust for mobile */
+                margin-bottom: 15px;
+            }
+
+            /* Responsive iframe */
+            #wx-login-container iframe {
+                width: 100% !important;
+                transform: scale(0.9);
+                /* Slightly smaller QR */
+                transform-origin: center top;
+            }
+
+            /* Hide desktop login button and other elements */
             .btn-login {
                 display: none !important;
             }
@@ -1072,7 +1129,7 @@
     <div id="wx-login-container" class="wx-login-modal">
         <div class="wx-login-close" onclick="document.getElementById('wx-login-container').style.display='none'">×
         </div>
-        <div class="wx-login-title">开启时光记忆</div>
+        <div class="wx-login-title">Christmas Memories</div>
         <div id="login_container"></div>
 
         <div class="wx-login-benefits">

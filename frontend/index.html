@@ -1093,6 +1093,66 @@
         </div>
     </div>
 
+    <!-- VIP Value Proposition Modal (Step 1: Show Benefits) -->
+    <div id="vip-benefits-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9998; align-items:center; justify-content:center;">
+        <div
+            style="background: linear-gradient(135deg, #0f1520 0%, #1a2332 100%); border: 2px solid #d4af37; padding: 40px 30px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; position: relative; box-shadow: 0 0 50px rgba(212, 175, 55, 0.4);">
+            <div class="close-vip-benefits" onclick="document.getElementById('vip-benefits-modal').style.display='none'"
+                style="position:absolute; top:15px; right:20px; color:#d4af37; cursor:pointer; font-size:28px; transition: transform 0.3s;"
+                onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">×
+            </div>
+
+            <h2
+                style="color:#d4af37; font-family:'Cinzel',serif; font-size:26px; margin-bottom:25px; letter-spacing:2px;">
+                🎄 PREMIUM 会员权益</h2>
+
+            <div style="text-align:left; margin-bottom:30px;">
+                <div
+                    style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:12px; background:rgba(212,175,55,0.1); border-radius:8px; border-left:3px solid #d4af37;">
+                    <span style="font-size:24px;">📸</span>
+                    <div>
+                        <div style="color:#d4af37; font-weight:bold; font-size:14px; margin-bottom:3px;">上传专属照片</div>
+                        <div style="color:#aaa; font-size:12px;">在3D圣诞树中展示您的珍贵回忆</div>
+                    </div>
+                </div>
+
+                <div
+                    style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:12px; background:rgba(212,175,55,0.1); border-radius:8px; border-left:3px solid #d4af37;">
+                    <span style="font-size:24px;">🎵</span>
+                    <div>
+                        <div style="color:#d4af37; font-weight:bold; font-size:14px; margin-bottom:3px;">自定义背景音乐</div>
+                        <div style="color:#aaa; font-size:12px;">打造独一无二的节日氛围</div>
+                    </div>
+                </div>
+
+                <div
+                    style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:12px; background:rgba(212,175,55,0.1); border-radius:8px; border-left:3px solid #d4af37;">
+                    <span style="font-size:24px;">🚀</span>
+                    <div>
+                        <div style="color:#d4af37; font-weight:bold; font-size:14px; margin-bottom:3px;">享受未来更新</div>
+                        <div style="color:#aaa; font-size:12px;">持续获得新功能与优化体验</div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="background: linear-gradient(90deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.05) 100%); padding: 15px; border-radius: 8px; margin-bottom: 25px; border: 1px dashed rgba(212,175,55,0.4);">
+                <div style="color:#d4af37; font-size:28px; font-weight:bold; margin-bottom:5px;">¥19.9 <span
+                        style="text-decoration:line-through; color:#888; font-size:16px; margin-left:10px;">¥49.9</span>
+                </div>
+                <div style="color:#ffd966; font-size:13px; letter-spacing:1px;">🎄 圣诞特惠 · 一年有效期</div>
+            </div>
+
+            <button
+                onclick="document.getElementById('vip-benefits-modal').style.display='none'; document.getElementById('btn-pay').click();"
+                style="width:100%; background:linear-gradient(135deg, #d4af37 0%, #ffd966 100%); color:#000; border:none; padding:15px; font-size:16px; font-weight:bold; border-radius:8px; cursor:pointer; font-family:'Cinzel',serif; letter-spacing:2px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(212,175,55,0.4);"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(212,175,55,0.6)';"
+                onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(212,175,55,0.4)';">立即解锁
+                Premium ✨</button>
+        </div>
+    </div>
+
     <!-- Pay Modal (Redesigned) -->
     <div id="pay-modal">
         <div class="pay-content">
@@ -1702,21 +1762,11 @@
 
                 // 2. Check VIP
                 if (!currentUser.is_vip) {
-                    console.log("Action blocked: User is not VIP");
-                    // Show Pay Modal
-                    const btnPay = document.getElementById('btn-pay');
-                    if (btnPay) {
-                        btnPay.click();
-                    } else {
-                        // Fallback just in case
-                        const modal = document.getElementById('pay-modal');
-                        const loading = document.getElementById('pay-loading');
-                        const qrArea = document.getElementById('pay-qr-area');
-                        if (modal) modal.style.display = 'flex';
-                        // Since we are bypassing btnPay click, we might need to manually trigger order if we go this route
-                        // But btnPay should exist even if hidden.
-                        // If btnPay is explicitly removed from DOM (less likely), we'd need to duplicate logic or ensure btnPay is always in DOM.
-                        // Current logic hides it via style.display, so click() is safe.
+                    console.log("Action blocked: User is not VIP - Showing benefits modal");
+                    // Show VIP Benefits Modal (Step 1)
+                    const benefitsModal = document.getElementById('vip-benefits-modal');
+                    if (benefitsModal) {
+                        benefitsModal.style.display = 'flex';
                     }
                     return;
                 }

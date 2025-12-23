@@ -50,34 +50,31 @@ function sendMock(phone, code) {
 
 /**
  * SUBMAIL 短信发送
+ * 官方文档：https://www.mysubmail.com/lab/vm6rm1
  */
 async function sendSUBMAIL(phone, code) {
     if (!SUBMAIL_APP_ID || !SUBMAIL_APP_KEY) {
         throw new Error('SUBMAIL credentials not configured');
     }
 
-    const url = 'https://api-v4.mysubmail.com/sms/xsend';
-    const data = {
+    const url = 'https://api-v4.mysubmail.com/message/send.json';
+
+    // 短信内容必须包含签名
+    const content = `【PhotoTree】您的验证码是${code}，5分钟内有效。`;
+
+    const params = new URLSearchParams({
         appid: SUBMAIL_APP_ID,
         to: phone,
-        project: SUBMAIL_TEMPLATE_ID,
-        vars: JSON.stringify({ code })
-    };
+        content: content,
+        signature: SUBMAIL_APP_KEY  // 直接使用 App Key（sign_type=normal）
+    });
 
-    // SUBMAIL 使用签名认证
-    const timestamp = Math.floor(Date.now() / 1000);
-    const signStr = `${SUBMAIL_APP_ID}${SUBMAIL_APP_KEY}${timestamp}`;
-    const signature = crypto.createHash('md5').update(signStr).digest('hex');
-
-    data.timestamp = timestamp;
-    data.sign_type = 'md5';
-    data.signature = signature;
-
-    const response = await axios.post(url, data, {
+    const response = await axios.post(url, params.toString(), {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
     if (response.data.status === 'success') {
+        console.log(`[SMS] SUBMAIL sent successfully, send_id: ${response.data.send_id}`);
         return { success: true, message: 'SMS sent via SUBMAIL' };
     } else {
         throw new Error(response.data.msg || 'SUBMAIL send failed');

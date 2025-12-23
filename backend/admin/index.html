@@ -325,12 +325,12 @@
 
     <script>
         // 默认连接线上环境，因为用户主要目的是监控线上
-        let API_BASE = 'https://aiguess.cn';
+        let API_BASE = 'https://www.aiguess.cn';
 
         // 允许用户临时切换回本地（用于调试）
         function toggleEnv() {
             if (API_BASE.includes('localhost')) {
-                API_BASE = 'https://aiguess.cn';
+                API_BASE = 'https://www.aiguess.cn';
                 document.getElementById('env-indicator').innerHTML = '当前环境: <span style="color:#28a745">🟢 线上生产 (aiguess.cn)</span> | <a href="#" onclick="toggleEnv()">切换到本地</a>';
             } else {
                 API_BASE = 'http://localhost:3000';

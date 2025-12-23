@@ -1221,7 +1221,7 @@
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-        i 'three/addons/environments/RoomEnvironment.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
         import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 
         // Custom Modules (Inlined to avoid Vercel module loading issues)
@@ -1662,7 +1662,8 @@
             }
 
             const musicWrapper = document.getElementById('music-wrapper');
-                      rap                       musicWrapper.             => handlePrivilegedAction('music');
+            if (musicWrapper) {
+                musicWrapper.onclick = () => handlePrivilegedAction('music');
             }
 
             function handlePrivilegedAction(type) {

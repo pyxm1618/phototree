@@ -977,13 +977,45 @@
 
             /* Responsive Login Modal */
             .wx-login-modal {
-                width: 90%;
-                padding: 20px;
+                width: 85%;
+                max-width: 350px;
+                padding: 15px;
+            }
+
+            .wx-login-title {
+                font-size: 18px;
+                margin-bottom: 15px;
             }
 
             #wx-login-container iframe {
                 width: 100% !important;
-                transform: scale(0.9);
+                transform: scale(0.85);
+                transform-origin: center;
+            }
+
+            .wx-login-benefits {
+                margin-top: 15px;
+                padding-top: 12px;
+            }
+
+            .wx-login-benefit-item {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            .wx-login-scan-tip {
+                margin-top: 12px;
+                padding-top: 10px;
+                border-top: 1px solid rgba(212, 175, 55, 0.2);
+                color: #ffd966;
+                font-size: 12px;
+                text-align: center;
+                font-weight: 600;
+            }
+
+            /* Hide desktop login button on mobile */
+            .btn-login {
+                display: none !important;
             }
         }
     </style>
@@ -1004,11 +1036,11 @@
     <div id="mobile-navbar">
         <div class="navbar-item" id="navbar-upload">
             <div class="navbar-icon">📸</div>
-            <div class="navbar-label">照片</div>
+            <div class="navbar-label">上传照片</div>
         </div>
         <div class="navbar-item" id="navbar-music">
             <div class="navbar-icon">🎵</div>
-            <div class="navbar-label">音乐</div>
+            <div class="navbar-label">自定义音乐</div>
         </div>
         <div class="navbar-item" id="navbar-tutorial">
             <div class="navbar-icon">📖</div>
@@ -1031,6 +1063,7 @@
             <div class="wx-login-benefit-item"><span>🚀</span> 解锁自定义照片上传与背景音乐</div>
             <div class="wx-login-benefit-item"><span>✨</span> 尊享沉浸式 3D 圣诞树体验</div>
             <div class="wx-login-benefit-item"><span>🛡️</span> 数据仅保存在您的设备，隐私无忧</div>
+            <div class="wx-login-scan-tip">📱 请使用其他手机扫码登录</div>
         </div>
     </div>
 

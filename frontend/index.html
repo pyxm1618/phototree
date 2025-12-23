@@ -1680,6 +1680,18 @@
             // Pay Handler (Auto Trigger)
             if (btnPay) {
                 btnPay.onclick = async () => {
+                    // If coming from benefits modal, skip to payment directly
+                    if (!window.skipBenefitsModal) {
+                        // First show benefits modal
+                        const benefitsModal = document.getElementById('vip-benefits-modal');
+                        if (benefitsModal) {
+                            benefitsModal.style.display = 'flex';
+                        }
+                        return;
+                    }
+                    // Reset flag
+                    window.skipBenefitsModal = false;
+
                     const modal = document.getElementById('pay-modal');
                     const loading = document.getElementById('pay-loading');
                     const qrArea = document.getElementById('pay-qr-area');

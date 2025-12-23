@@ -229,6 +229,18 @@ app.post('/api/pay/create-order', async (req, res) => {
         // Native Pay does not check OpenID against AppID during order creation, so this is safe.
         const PAY_APP_ID = 'wx746a39363f67ae95'; // 小树荫助手 (Verified from user screenshot)
 
+        // 查询用户的邀请码
+        let referrerCode = null;
+        try {
+            const userResult = await db.query('SELECT referrer_code FROM users WHERE openid = $1', [openid]);
+            if (userResult.rows[0]?.referrer_code) {
+                referrerCode = userResult.rows[0].referrer_code;
+                console.log(`[Pay] User has referrer: ${referrerCode}`);
+            }
+        } catch (err) {
+            console.error('[Pay] Failed to query referrer_code:', err);
+        }
+
         const requestBody = {
             appid: PAY_APP_ID,
             mchid: process.env.WECHAT_MCH_ID,
@@ -241,8 +253,20 @@ app.post('/api/pay/create-order', async (req, res) => {
                 total: 1800, // 18 CNY (圣诞特惠价)
                 currency: 'CNY'
             },
-            attach: JSON.stringify({ openid: openid, app: 'phototree' })
+            attach: JSON.stringify({
+                openid: openid,
+                app: 'phototree',
+                referrer_code: referrerCode  // 添加邀请码信息
+            })
         };
+
+        // 如果有邀请码，标记为分账订单
+        if (referrerCode) {
+            requestBody.settle_info = {
+                profit_sharing: true
+            };
+            console.log('[Pay] Order marked for profit sharing');
+        }
 
         const url = '/v3/pay/transactions/native';
         const method = 'POST';
@@ -363,12 +387,13 @@ app.post('/api/pay/notify', async (req, res) => {
             console.log("[Pay] Direct Payment Data:", paymentData);
         }
 
-        // Extract openid from attach field (支持 JSON 格式)
-        let openid;
+        // Extract openid and referrer_code from attach field (支持 JSON 格式)
+        let openid, referrerCode;
         try {
             const attachData = JSON.parse(paymentData.attach);
             openid = attachData.openid;
-            console.log(`[Pay] Parsed attach: app=${attachData.app}, openid=${openid}`);
+            referrerCode = attachData.referrer_code;
+            console.log(`[Pay] Parsed attach: app=${attachData.app}, openid=${openid}, referrer=${referrerCode}`);
         } catch (e) {
             // 兼容旧格式
             openid = paymentData.attach || paymentData.payer?.openid;
@@ -384,6 +409,23 @@ app.post('/api/pay/notify', async (req, res) => {
             try {
                 await db.query("UPDATE users SET is_vip = 1, vip_expire_time = $1 WHERE openid = $2", [expireTime, openid]);
                 console.log(`[Pay] ✅ User ${openid} upgraded to Premium via callback`);
+
+                // 执行分账（如果有邀请码）
+                if (referrerCode) {
+                    console.log(`[Pay] Attempting profit sharing for referrer: ${referrerCode}`);
+                    const sharingResult = await executeProfitSharing(
+                        paymentData.transaction_id,
+                        outTradeNo,
+                        referrerCode,
+                        paymentData.amount?.total || 1800
+                    );
+
+                    if (sharingResult.success) {
+                        console.log(`[Pay] 🎉 Profit sharing completed: ${sharingResult.orderNo}`);
+                    } else {
+                        console.warn(`[Pay] Profit sharing failed: ${sharingResult.reason || sharingResult.error}`);
+                    }
+                }
             } catch (err) {
                 console.error("[Pay] Failed to update VIP:", err);
             }
@@ -576,6 +618,138 @@ app.get('/api/admin/stats', async (req, res) => {
         });
     } catch (err) {
         console.error('[Admin] Stats Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * Helper: 执行微信支付分账
+ */
+async function executeProfitSharing(transactionId, outTradeNo, referrerCode, totalAmount) {
+    try {
+        // 1. 查询分账接收方信息
+        const receiverResult = await db.query(
+            'SELECT receiver_openid, sharing_percentage, owner_name FROM referral_codes WHERE code = $1 AND receiver_openid IS NOT NULL',
+            [referrerCode]
+        );
+
+        if (receiverResult.rows.length === 0) {
+            console.log(`[ProfitSharing] No receiver configured for code: ${referrerCode}`);
+            return { success: false, reason: 'no_receiver' };
+        }
+
+        const receiver = receiverResult.rows[0];
+
+        // 2. 计算分账金额
+        const sharingAmount = Math.floor(totalAmount * receiver.sharing_percentage / 100);
+
+        if (sharingAmount < 1) {
+            console.log(`[ProfitSharing] Sharing amount too small: ${sharingAmount}`);
+            return { success: false, reason: 'amount_too_small' };
+        }
+
+        console.log(`[ProfitSharing] Sharing ${sharingAmount}分 to ${receiver.receiver_openid} for order ${outTradeNo}`);
+
+        // 3. 调用微信分账 API
+        const PAY_APP_ID = 'wx746a39363f67ae95';
+        const profitSharingOrderNo = `PS_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        const url = '/v3/profitsharing/orders';
+
+        const requestBody = {
+            appid: PAY_APP_ID,
+            transaction_id: transactionId,
+            out_order_no: profitSharingOrderNo,
+            receivers: [{
+                type: 'PERSONAL_OPENID',
+                account: receiver.receiver_openid,
+                amount: sharingAmount,
+                description: '邀请返佣'
+            }]
+        };
+
+        const bodyStr = JSON.stringify(requestBody);
+        const authHeader = buildAuthHeader('POST', url, bodyStr);
+
+        const response = await axios.post(`https://api.mch.weixin.qq.com${url}`, requestBody, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authHeader,
+                'Accept': 'application/json'
+            }
+        });
+
+        // 4. 记录分账结果
+        await db.query(
+            `INSERT INTO profit_sharing_records 
+             (out_order_no, transaction_id, referrer_code, receiver_openid, receiver_name, amount, status, wechat_order_id, description)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [profitSharingOrderNo, transactionId, referrerCode, receiver.receiver_openid,
+                receiver.owner_name, sharingAmount, 'success', response.data.order_id, '邀请返佣']
+        );
+
+        console.log(`[ProfitSharing] ✅ Success: ${profitSharingOrderNo}`);
+        return { success: true, orderNo: profitSharingOrderNo };
+
+    } catch (error) {
+        console.error('[ProfitSharing] Error:', error.response?.data || error.message);
+
+        // 记录失败
+        try {
+            await db.query(
+                `INSERT INTO profit_sharing_records 
+                 (out_order_no, transaction_id, referrer_code, amount, status, error_message)
+                 VALUES ($1, $2, $3, $4, $5, $6)`,
+                [`PS_FAILED_${Date.now()}`, transactionId, referrerCode, 0, 'failed',
+                error.response?.data?.message || error.message]
+            );
+        } catch (dbErr) {
+            console.error('[ProfitSharing] Failed to record error:', dbErr);
+        }
+
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * @route POST /api/admin/profit-sharing/add-receiver
+ * @desc 添加分账接收方（绑定 KOL OpenID）
+ */
+app.post('/api/admin/profit-sharing/add-receiver', async (req, res) => {
+    const { referralCode, openid, sharingPercentage } = req.body;
+
+    if (!referralCode || !openid) {
+        return res.status(400).json({ error: 'Missing referralCode or openid' });
+    }
+
+    try {
+        // 更新 referral_codes 表
+        await db.query(
+            'UPDATE referral_codes SET receiver_openid = $1, sharing_percentage = $2 WHERE code = $3',
+            [openid, sharingPercentage || 10.00, referralCode]
+        );
+
+        console.log(`[ProfitSharing] Receiver added: ${referralCode} -> ${openid}`);
+        res.json({ success: true, message: 'Receiver added successfully' });
+    } catch (err) {
+        console.error('[ProfitSharing] Add receiver error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route GET /api/admin/profit-sharing/records
+ * @desc 查询分账记录
+ */
+app.get('/api/admin/profit-sharing/records', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT * FROM profit_sharing_records 
+            ORDER BY created_at DESC 
+            LIMIT 100
+        `);
+        res.json({ success: true, records: result.rows });
+    } catch (err) {
+        console.error('[ProfitSharing] Query records error:', err);
         res.status(500).json({ error: err.message });
     }
 });

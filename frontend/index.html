@@ -1097,7 +1097,18 @@
 
             <!-- QR Code Area (Hidden initially) -->
             <div id="pay-qr-area" style="display:none; animation: fadeIn 0.5s;">
-                <div class="pay-price">￥0.01 <span style="font-size:12px; color:#666;">/ 永久解锁</span></div>
+                <!-- Christmas Special Price Layout -->
+                <div class="pay-price-container"
+                    style="display: flex; align-items: baseline; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                    <span class="original-price"
+                        style="text-decoration: line-through; color: rgba(255,255,255,0.4); font-size: 14px;">¥49.9</span>
+                    <span class="current-price"
+                        style="color: #ff4d4f; font-size: 32px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 77, 79, 0.3);">¥19.9</span>
+                    <div class="promo-badge"
+                        style="background: linear-gradient(135deg, #ff4d4f 0%, #f5222d 100%); color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transform: translateY(-5px);">
+                        🎄 圣诞特惠
+                    </div>
+                </div>
 
                 <div id="qrcode-wrapper">
                     <div id="qrcode-container"></div>

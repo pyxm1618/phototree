@@ -288,6 +288,24 @@
                     <button onclick="createReferralCode()">创建</button>
                 </div>
             </div>
+
+            <!-- 分账接收方管理 ⭐ 新增 -->
+            <div class="section">
+                <div class="section-title">💰 分账接收方管理</div>
+                <p style="color:#666; font-size:14px; margin-bottom:16px;">
+                    ⚠️ 绑定前需先在<a href="https://pay.weixin.qq.com" target="_blank" style="color:#667eea">微信商户平台</a>添加该 KOL
+                    为分账接收方
+                </p>
+                <div class="create-code-form">
+                    <input type="text" id="receiver-code" placeholder="邀请码 (如: KOL_XIAOMING)" required>
+                    <input type="text" id="receiver-openid" placeholder="KOL的OpenID (如: oXXXX...)" required
+                        style="flex:2;">
+                    <input type="number" id="receiver-percentage" placeholder="分账比例 (%)" value="10" step="0.1" required>
+                    <button onclick="addReceiver()" style="background:#28a745">绑定OpenID</button>
+                </div>
+                <div id="receiver-message" style="margin-top:10px; padding:10px; border-radius:6px; display:none;">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -486,6 +504,78 @@
             } catch (error) {
                 alert('❌ 请求失败: ' + error.message);
                 console.error('创建邀请码失败:', error);
+            }
+        }
+
+        async function addReceiver() {
+            const referralCode = document.getElementById('receiver-code').value.trim();
+            const openid = document.getElementById('receiver-openid').value.trim();
+            const sharingPercentage = parseFloat(document.getElementById('receiver-percentage').value);
+
+            if (!referralCode || !openid) {
+                showMessage('请填写邀请码和OpenID', 'error');
+                return;
+            }
+
+            if (sharingPercentage <= 0 || sharingPercentage > 30) {
+                showMessage('分账比例必须在 0-30% 之间', 'error');
+                return;
+            }
+
+            try {
+                showMessage('正在绑定...', 'info');
+
+                const response = await fetch(`${API_BASE}/api/admin/profit-sharing/add-receiver`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        referralCode,
+                        openid,
+                        sharingPercentage
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(`✅ 绑定成功！邀请码 ${referralCode} 已绑定 OpenID，分账比例 ${sharingPercentage}%`, 'success');
+                    // 清空表单
+                    document.getElementById('receiver-code').value = '';
+                    document.getElementById('receiver-openid').value = '';
+                    document.getElementById('receiver-percentage').value = '10';
+                } else {
+                    showMessage('❌ 绑定失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (error) {
+                showMessage('❌ 请求失败: ' + error.message, 'error');
+                console.error('绑定接收方失败:', error);
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('receiver-message');
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+
+            if (type === 'success') {
+                messageDiv.style.background = '#d4edda';
+                messageDiv.style.color = '#155724';
+                messageDiv.style.border = '1px solid #c3e6cb';
+            } else if (type === 'error') {
+                messageDiv.style.background = '#f8d7da';
+                messageDiv.style.color = '#721c24';
+                messageDiv.style.border = '1px solid #f5c6cb';
+            } else {
+                messageDiv.style.background = '#d1ecf1';
+                messageDiv.style.color = '#0c5460';
+                messageDiv.style.border = '1px solid #bee5eb';
+            }
+
+            // 3秒后自动隐藏（成功消息）
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
             }
         }
 

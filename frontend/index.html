@@ -2631,40 +2631,7 @@
                             console.error("Enumeration failed:", enumErr);
                         }
 
-                        // Create Retry Button
 
-
-                        // Create Retry Button
-                        const retryBtn = document.createElement('button');
-                        retryBtn.innerText = "开启摄像头";
-                        retryBtn.style.position = 'absolute';
-                        retryBtn.style.top = '10px';
-                        retryBtn.style.left = '50%';
-                        retryBtn.style.transform = 'translateX(-50%)';
-                        retryBtn.style.zIndex = '9999';
-                        retryBtn.onclick = () => initMediaPipe();
-                        document.body.appendChild(retryBtn);
-
-                        // [DEBUG] Pure Native Test Button
-                        const testBtn = document.createElement('button');
-                        testBtn.innerText = "原生测试";
-                        testBtn.style.position = 'absolute';
-                        testBtn.style.top = '50px';
-                        testBtn.style.left = '50%';
-                        testBtn.style.transform = 'translateX(-50%)';
-                        testBtn.style.zIndex = '9999';
-                        testBtn.style.background = 'red';
-                        testBtn.onclick = async () => {
-                            try {
-                                alert("请求原生摄像头权限...");
-                                const s = await navigator.mediaDevices.getUserMedia({ video: true });
-                                alert("成功！获取到流: " + s.id);
-                                video.srcObject = s;
-                            } catch (e) {
-                                alert("原生测试失败: " + e.name + " - " + e.message);
-                            }
-                        };
-                        document.body.appendChild(testBtn);
                     }
                 }
             } else {

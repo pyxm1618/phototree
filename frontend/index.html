@@ -1665,7 +1665,8 @@
 
                 // Upload buttons are now always visible, logic handled on click
                 const uploadBtn = document.querySelector('.controls-wrapper');
-                if (uploadBtn) uploadBtn.style.display = 'block';
+                // Ensure it stays flex (or empty to use CSS default)
+                if (uploadBtn) uploadBtn.style.display = '';
             }
 
             // Load user's images

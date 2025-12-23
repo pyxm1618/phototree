@@ -1859,11 +1859,16 @@
                 if (user.is_vip) {
                     // Premium user: show badge, hide pay button
                     card.classList.add('vip-active');
+                    card.classList.add('force-show'); // Enforce visibility on desktop
                     if (btnPay) btnPay.style.display = 'none';
                 } else {
                     // Non-premium: hide badge, show pay button
                     card.classList.remove('vip-active');
-                    if (btnPay) btnPay.style.display = 'block';
+                    card.classList.add('force-show'); // Enforce visibility on desktop
+                    if (btnPay) {
+                        btnPay.style.display = 'flex'; // Use flex for button
+                        btnPay.classList.add('force-show'); // Enforce explicit visibility
+                    }
                 }
 
                 // Upload buttons are now always visible, logic handled on click

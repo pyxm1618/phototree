@@ -96,8 +96,8 @@ app.post('/api/login', async (req, res) => {
  * @desc Handle WeChat OAuth2 Callback (Website Application)
  */
 app.get('/api/callback/wechat', async (req, res) => {
-    const { code, state } = req.query;
-    console.log(`[Callback] Received code: ${code}`);
+    const { code, state, ref, device } = req.query; // 添加 ref 和 device 参数
+    console.log(`[Callback] Received code: ${code}, ref: ${ref}, device: ${device}`);
 
     if (!code) {
         return res.redirect('/?error=no_code');
@@ -138,8 +138,8 @@ app.get('/api/callback/wechat', async (req, res) => {
             console.error('[Callback] Failed to fetch user info:', err.message);
         }
 
-        // Ensure user exists and update profile
-        await ensureUserExists(openid, nickname, avatarUrl);
+        // Ensure user exists and update profile with referrer code and device type
+        await ensureUserExists(openid, nickname, avatarUrl, ref || null, device || 'unknown');
 
         // Redirect back to home with openid (In production, use a secure session/token)
         // For MVP: Passing openid in query is risky but functional for this "toy" project.
@@ -151,15 +151,27 @@ app.get('/api/callback/wechat', async (req, res) => {
     }
 });
 
-async function ensureUserExists(openid, nickname = '微信用户', avatarUrl = '') {
+
+async function ensureUserExists(openid, nickname = '微信用户', avatarUrl = '', referrerCode = null, deviceType = 'unknown') {
     try {
         const result = await db.query("SELECT * FROM users WHERE openid = $1", [openid]);
         if (!result.rows[0]) {
-            console.log(`[DB] Creating new user: ${openid}`);
-            await db.query("INSERT INTO users (openid, nickname, avatar_url) VALUES ($1, $2, $3)", [openid, nickname, avatarUrl]);
+            console.log(`[DB] Creating new user: ${openid} (ref: ${referrerCode}, device: ${deviceType})`);
+            await db.query(
+                "INSERT INTO users (openid, nickname, avatar_url, referrer_code, device_type) VALUES ($1, $2, $3, $4, $5)",
+                [openid, nickname, avatarUrl, referrerCode, deviceType]
+            );
         } else {
-            // Update profile on every login
-            await db.query("UPDATE users SET nickname = $1, avatar_url = $2 WHERE openid = $3", [nickname, avatarUrl, openid]);
+            // Update profile on every login, but don't overwrite referrer_code if already set
+            const updateQuery = result.rows[0].referrer_code
+                ? "UPDATE users SET nickname = $1, avatar_url = $2, device_type = $3 WHERE openid = $4"
+                : "UPDATE users SET nickname = $1, avatar_url = $2, referrer_code = $3, device_type = $4 WHERE openid = $5";
+
+            const updateParams = result.rows[0].referrer_code
+                ? [nickname, avatarUrl, deviceType, openid]
+                : [nickname, avatarUrl, referrerCode, deviceType, openid];
+
+            await db.query(updateQuery, updateParams);
         }
     } catch (err) {
         console.error('[DB] User Ensure Error:', err);
@@ -384,6 +396,186 @@ app.post('/api/pay/notify', async (req, res) => {
         console.error("[Pay] Notify Error:", error);
         // Still return success to prevent WeChat from retrying
         res.status(200).json({ code: "SUCCESS", message: "OK" });
+    }
+});
+
+/**
+ * @route POST /api/track/pv
+ * @desc Record page view for UV/PV tracking
+ */
+app.post('/api/track/pv', async (req, res) => {
+    const { sessionId, referrerCode, deviceType, userAgent } = req.body;
+    const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+    try {
+        await db.query(
+            `INSERT INTO page_views (session_id, referrer_code, device_type, user_agent, ip_address) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [sessionId, referrerCode || null, deviceType || 'unknown', userAgent || '', ipAddress]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[Track] PV Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route POST /api/referral/create
+ * @desc Create a new referral code (Admin only)
+ */
+app.post('/api/referral/create', async (req, res) => {
+    const { code, ownerName, ownerContact, commissionRate, notes } = req.body;
+
+    if (!code || !ownerName) {
+        return res.status(400).json({ error: 'Code and owner name are required' });
+    }
+
+    try {
+        const result = await db.query(
+            `INSERT INTO referral_codes (code, owner_name, owner_contact, commission_rate, notes) 
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [code, ownerName, ownerContact || null, commissionRate || 0, notes || null]
+        );
+        console.log(`[Referral] Created code: ${code} for ${ownerName}`);
+        res.json({ success: true, referralCode: result.rows[0] });
+    } catch (err) {
+        console.error('[Referral] Create Error:', err);
+        if (err.code === '23505') { // Unique violation
+            res.status(400).json({ error: 'Referral code already exists' });
+        } else {
+            res.status(500).json({ error: err.message });
+        }
+    }
+});
+
+/**
+ * @route GET /api/referral/stats/:code
+ * @desc Get statistics for a specific referral code
+ */
+app.get('/api/referral/stats/:code', async (req, res) => {
+    const { code } = req.params;
+
+    try {
+        // Get referral code info
+        const codeInfo = await db.query(
+            'SELECT * FROM referral_codes WHERE code = $1',
+            [code]
+        );
+
+        if (codeInfo.rows.length === 0) {
+            return res.status(404).json({ error: 'Referral code not found' });
+        }
+
+        // Get registered users count
+        const registeredUsers = await db.query(
+            'SELECT COUNT(*) as count FROM users WHERE referrer_code = $1',
+            [code]
+        );
+
+        // Get paid users count
+        const paidUsers = await db.query(
+            'SELECT COUNT(*) as count FROM users WHERE referrer_code = $1 AND is_vip = 1',
+            [code]
+        );
+
+        // Get PV count from this referral code
+        const pvCount = await db.query(
+            'SELECT COUNT(*) as count FROM page_views WHERE referrer_code = $1',
+            [code]
+        );
+
+        res.json({
+            success: true,
+            referralCode: codeInfo.rows[0],
+            stats: {
+                totalPV: parseInt(pvCount.rows[0].count),
+                registeredUsers: parseInt(registeredUsers.rows[0].count),
+                paidUsers: parseInt(paidUsers.rows[0].count),
+                conversionRate: registeredUsers.rows[0].count > 0
+                    ? ((paidUsers.rows[0].count / registeredUsers.rows[0].count) * 100).toFixed(2) + '%'
+                    : '0%'
+            }
+        });
+    } catch (err) {
+        console.error('[Referral] Stats Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route GET /api/admin/stats
+ * @desc Get overall platform statistics for admin dashboard
+ */
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        // Total UV (unique session_id)
+        const uvResult = await db.query('SELECT COUNT(DISTINCT session_id) as count FROM page_views');
+
+        // Total PV
+        const pvResult = await db.query('SELECT COUNT(*) as count FROM page_views');
+
+        // Total registered users
+        const usersResult = await db.query('SELECT COUNT(*) as count FROM users');
+
+        // Total paid users
+        const paidResult = await db.query('SELECT COUNT(*) as count FROM users WHERE is_vip = 1');
+
+        // Device distribution
+        const deviceResult = await db.query(`
+            SELECT device_type, COUNT(*) as count 
+            FROM page_views 
+            GROUP BY device_type
+        `);
+
+        // Daily stats (last 7 days)
+        const dailyStats = await db.query(`
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as pv,
+                COUNT(DISTINCT session_id) as uv
+            FROM page_views
+            WHERE created_at >= NOW() - INTERVAL '7 days'
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+        `);
+
+        // Top referral codes
+        const topReferrals = await db.query(`
+            SELECT 
+                rc.code,
+                rc.owner_name,
+                COUNT(DISTINCT u.openid) as registered_users,
+                COUNT(DISTINCT CASE WHEN u.is_vip = 1 THEN u.openid END) as paid_users
+            FROM referral_codes rc
+            LEFT JOIN users u ON u.referrer_code = rc.code
+            WHERE rc.is_active = true
+            GROUP BY rc.code, rc.owner_name
+            ORDER BY paid_users DESC, registered_users DESC
+            LIMIT 10
+        `);
+
+        res.json({
+            success: true,
+            overview: {
+                totalUV: parseInt(uvResult.rows[0].count),
+                totalPV: parseInt(pvResult.rows[0].count),
+                totalUsers: parseInt(usersResult.rows[0].count),
+                paidUsers: parseInt(paidResult.rows[0].count),
+                conversionRate: usersResult.rows[0].count > 0
+                    ? ((paidResult.rows[0].count / usersResult.rows[0].count) * 100).toFixed(2) + '%'
+                    : '0%'
+            },
+            deviceDistribution: deviceResult.rows.reduce((acc, row) => {
+                acc[row.device_type || 'unknown'] = parseInt(row.count);
+                return acc;
+            }, {}),
+            dailyStats: dailyStats.rows,
+            topReferrals: topReferrals.rows
+        });
+    } catch (err) {
+        console.error('[Admin] Stats Error:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 

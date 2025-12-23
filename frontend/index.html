@@ -979,8 +979,8 @@
                 max-width: 340px;
                 padding: 40px 20px;
                 /* Sustain the look */
-                background: rgba(15, 20, 30, 0.8);
-                backdrop-filter: blur(20px);
+                background: rgba(15, 20, 30, 0.85);
+                backdrop-filter: blur(25px);
             }
 
             .wx-login-title {
@@ -991,6 +991,13 @@
             #login_container {
                 width: 180px;
                 height: 180px;
+            }
+
+            /* Ensure iframe fits container exactly */
+            #login_container iframe {
+                width: 100% !important;
+                height: 100% !important;
+                border: none;
             }
         }
     </style>
@@ -1142,10 +1149,45 @@
 
     /* --- Mobile Adaptation --- */
     @media (max-width: 768px) {
-
-    /* 1. Remove self-view camera window */
+    /* 1. Remove self-view camera window - CRITICAL FIX */
     #webcam-wrapper {
     display: none !important;
+    }
+
+    /* 2. Hide desktop controls */
+    .controls-wrapper {
+    display: none !important;
+    }
+
+    .help-btn {
+    display: none !important;
+    }
+
+    /* 3. Mobile Navbar adjustments */
+    #mobile-navbar {
+    display: flex;
+    }
+
+    /* ... Mobile Login Modal ... */
+    .wx-login-modal {
+    width: 90%;
+    max-width: 320px; /* Force narrow card */
+    padding: 30px 15px; /* Reduce padding */
+    }
+
+    .wx-login-title {
+    font-size: 36px;
+    }
+
+    .wx-login-subtitle {
+    display: none; /* Hide subtitle on mobile if explicit cleanliness needed */
+    }
+
+    #login_container {
+    width: 180px;
+    height: 180px;
+    margin-top: 10px;
+    }
     }
 
     /* 2. Hide desktop controls */
@@ -1330,25 +1372,13 @@
         <div class="wx-login-close" onclick="document.getElementById('wx-login-container').style.display='none'">×
         </div>
         <div class="wx-login-title">Christmas Memories</div>
-        <div class="wx-login-subtitle">Unlock Your Exclusive Memories</div>
+        <!-- Subtitle removed for simplicity as requested -->
         <div id="login_container"></div>
 
         <div class="wx-login-benefits">
-            <!-- Simplified to just the tip for the concept look -->
             <div class="wx-login-scan-tip">
-                PLEASE SCAN TO LOGIN<br>
-                <span style="font-size: 10px; opacity: 0.7; letter-spacing: 0;">(请使用手机微信扫码解锁)</span>
+                请使用手机微信扫码解锁
             </div>
-        </div>
-        <!-- Desktop Layout (Keep emojis if desired, or remove globally) -->
-        <div class="wx-login-benefit-item">解锁自定义照片上传与背景音乐</div>
-        <div class="wx-login-benefit-item">尊享沉浸式 3D 圣诞树体验</div>
-        <div class="wx-login-benefit-item">数据仅保存在您的设备，隐私无忧</div>
-
-        <!-- Mobile Layout Focus -->
-        <div class="wx-login-scan-tip">
-            请用TA的手机扫码<br>
-            解锁彼此的专属回忆
         </div>
     </div>
     </div>

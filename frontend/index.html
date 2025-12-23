@@ -994,23 +994,39 @@
             }
 
             .wx-login-benefits {
-                margin-top: 15px;
-                padding-top: 12px;
+                margin-top: 10px;
+                padding-top: 10px;
+                text-align: center;
             }
 
             .wx-login-benefit-item {
-                font-size: 11px;
-                margin-bottom: 6px;
+                display: none;
+                /* Hide detailed benefits on mobile for cleaner look */
             }
 
             .wx-login-scan-tip {
-                margin-top: 12px;
-                padding-top: 10px;
-                border-top: 1px solid rgba(212, 175, 55, 0.2);
-                color: #ffd966;
-                font-size: 12px;
+                margin-top: 5px;
+                padding-top: 8px;
+                border-top: 1px solid rgba(212, 175, 55, 0.1);
+                color: #d4af37;
+                font-size: 13px;
+                line-height: 1.6;
                 text-align: center;
-                font-weight: 600;
+                font-weight: 400;
+                letter-spacing: 0.5px;
+                text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            }
+
+            /* Use consistent glassmorphism for modal */
+            .wx-login-modal {
+                background: rgba(10, 15, 20, 0.85);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(212, 175, 55, 0.3);
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+                border-radius: 16px;
+                width: 80%;
+                /* Slightly smaller */
+                max-width: 320px;
             }
 
             /* Hide desktop login button on mobile */
@@ -1060,10 +1076,16 @@
         <div id="login_container"></div>
 
         <div class="wx-login-benefits">
-            <div class="wx-login-benefit-item"><span>🚀</span> 解锁自定义照片上传与背景音乐</div>
-            <div class="wx-login-benefit-item"><span>✨</span> 尊享沉浸式 3D 圣诞树体验</div>
-            <div class="wx-login-benefit-item"><span>🛡️</span> 数据仅保存在您的设备，隐私无忧</div>
-            <div class="wx-login-scan-tip">📱 请使用其他手机扫码登录</div>
+            <!-- Desktop Layout (Keep emojis if desired, or remove globally) -->
+            <div class="wx-login-benefit-item">解锁自定义照片上传与背景音乐</div>
+            <div class="wx-login-benefit-item">尊享沉浸式 3D 圣诞树体验</div>
+            <div class="wx-login-benefit-item">数据仅保存在您的设备，隐私无忧</div>
+
+            <!-- Mobile Layout Focus -->
+            <div class="wx-login-scan-tip">
+                请用TA的手机扫码<br>
+                解锁彼此的专属回忆
+            </div>
         </div>
     </div>
 

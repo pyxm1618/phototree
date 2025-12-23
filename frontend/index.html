@@ -891,6 +891,11 @@
             color: #d4af37;
         }
 
+        /* Mobile Bottom Navbar - Hidden by default */
+        #mobile-navbar {
+            display: none;
+        }
+
         /* --- Mobile Adaptation --- */
         @media (max-width: 768px) {
 
@@ -899,33 +904,75 @@
                 display: none !important;
             }
 
-            /* 2. Adapt UI Buttons (Size, Position) */
+            /* 2. Hide desktop controls */
             .controls-wrapper {
-                bottom: 100px;
-                /* Move up to avoid overlap with bottom bars */
-                right: 20px;
-                align-items: flex-end;
-                /* Keep aligned to right */
+                display: none !important;
             }
 
-            .upload-btn,
-            .music-upload-btn {
-                padding: 14px 24px;
-                /* Larger touch target */
-                font-size: 12px;
-                min-width: 140px;
+            .help-btn {
+                display: none !important;
             }
 
-            .btn-group {
+            /* 3. Show and style mobile navbar */
+            #mobile-navbar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 70px;
+                background: linear-gradient(180deg, rgba(10, 15, 25, 0.95) 0%, rgba(5, 10, 20, 0.98) 100%);
+                border-top: 1px solid rgba(212, 175, 55, 0.3);
+                backdrop-filter: blur(10px);
+                z-index: 1000;
+                justify-content: space-around;
+                align-items: center;
+                padding: 0 10px;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            }
+
+            .navbar-item {
+                display: flex;
                 flex-direction: column;
-                /* Stack vertically on mobile */
-                gap: 15px;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                padding: 8px 12px;
+                border-radius: 8px;
+                transition: all 0.3s;
+                flex: 1;
+                max-width: 80px;
+            }
+
+            .navbar-item:active {
+                transform: scale(0.95);
+                background: rgba(212, 175, 55, 0.1);
+            }
+
+            .navbar-icon {
+                font-size: 24px;
+                margin-bottom: 4px;
+            }
+
+            .navbar-label {
+                font-size: 11px;
+                color: rgba(212, 175, 55, 0.8);
+                font-weight: 500;
+                letter-spacing: 0.5px;
+            }
+
+            /* 4. Move music button to top right */
+            .music-btn {
+                top: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
             }
 
             #ui-layer h1 {
-                font-size: 4em;
-                /* Smaller title */
-                top: 15%;
+                font-size: 3.5em;
+                top: 12%;
             }
 
             /* Responsive Login Modal */
@@ -936,9 +983,7 @@
 
             #wx-login-container iframe {
                 width: 100% !important;
-                /* Force iframe check */
                 transform: scale(0.9);
-                /* Scale down if needed */
             }
         }
     </style>
@@ -953,31 +998,53 @@
         </div>
 
         <button id="btn-login" class="btn-login">微信登录</button>
-        <!-- WeChat Login QR Container -->
-        <div id="wx-login-container" class="wx-login-modal">
-            <div class="wx-login-close" onclick="document.getElementById('wx-login-container').style.display='none'">×
-            </div>
-            <div class="wx-login-title">开启时光记忆</div>
-            <div id="login_container"></div>
+    </div>
 
-            <div class="wx-login-benefits">
-                <div class="wx-login-benefit-item"><span>🚀</span> 解锁自定义照片上传与背景音乐</div>
-                <div class="wx-login-benefit-item"><span>✨</span> 尊享沉浸式 3D 圣诞树体验</div>
-                <div class="wx-login-benefit-item"><span>🛡️</span> 数据仅保存在您的设备，隐私无忧</div>
-            </div>
+    <!-- Mobile Bottom Navbar (Only visible on mobile) -->
+    <div id="mobile-navbar">
+        <div class="navbar-item" id="navbar-upload">
+            <div class="navbar-icon">📸</div>
+            <div class="navbar-label">照片</div>
         </div>
-
-        <button id="btn-pay" class="btn-login"
-            style="display:none; background:#222; border:1px solid #d4af37; color:#d4af37; margin-left:0; margin-right:10px;">购买
-            Premium</button>
-
-        <div id="user-card" class="user-card" style="display:none">
-            <span id="user-id">游客</span>
-            <span class="vip-badge">Premium</span>
-            <div class="user-dropdown">
-                <div class="user-dropdown-item" id="logout-btn">退出登录</div>
-            </div>
+        <div class="navbar-item" id="navbar-music">
+            <div class="navbar-icon">🎵</div>
+            <div class="navbar-label">音乐</div>
         </div>
+        <div class="navbar-item" id="navbar-tutorial">
+            <div class="navbar-icon">📖</div>
+            <div class="navbar-label">教程</div>
+        </div>
+        <div class="navbar-item" id="navbar-profile">
+            <div class="navbar-icon">👤</div>
+            <div class="navbar-label">我的</div>
+        </div>
+    </div>
+
+    <!-- WeChat Login QR Container -->
+    <div id="wx-login-container" class="wx-login-modal">
+        <div class="wx-login-close" onclick="document.getElementById('wx-login-container').style.display='none'">×
+        </div>
+        <div class="wx-login-title">开启时光记忆</div>
+        <div id="login_container"></div>
+
+        <div class="wx-login-benefits">
+            <div class="wx-login-benefit-item"><span>🚀</span> 解锁自定义照片上传与背景音乐</div>
+            <div class="wx-login-benefit-item"><span>✨</span> 尊享沉浸式 3D 圣诞树体验</div>
+            <div class="wx-login-benefit-item"><span>🛡️</span> 数据仅保存在您的设备，隐私无忧</div>
+        </div>
+    </div>
+
+    <button id="btn-pay" class="btn-login"
+        style="display:none; background:#222; border:1px solid #d4af37; color:#d4af37; margin-left:0; margin-right:10px;">购买
+        Premium</button>
+
+    <div id="user-card" class="user-card" style="display:none">
+        <span id="user-id">游客</span>
+        <span class="vip-badge">Premium</span>
+        <div class="user-dropdown">
+            <div class="user-dropdown-item" id="logout-btn">退出登录</div>
+        </div>
+    </div>
     </div>
 
     <!-- Pay Modal (Redesigned) -->
@@ -1606,6 +1673,46 @@
                     const input = document.getElementById('music-input');
                     if (input) input.click();
                 }
+            }
+
+            // --- Mobile Navbar Handlers ---
+            const navbarUpload = document.getElementById('navbar-upload');
+            const navbarMusic = document.getElementById('navbar-music');
+            const navbarTutorial = document.getElementById('navbar-tutorial');
+            const navbarProfile = document.getElementById('navbar-profile');
+
+            if (navbarUpload) {
+                navbarUpload.onclick = () => handlePrivilegedAction('image');
+            }
+
+            if (navbarMusic) {
+                navbarMusic.onclick = () => handlePrivilegedAction('music');
+            }
+
+            if (navbarTutorial) {
+                navbarTutorial.onclick = () => {
+                    const helpBtn = document.getElementById('help-btn');
+                    if (helpBtn) helpBtn.click();
+                };
+            }
+
+            if (navbarProfile) {
+                navbarProfile.onclick = () => {
+                    if (!currentUser) {
+                        // Not logged in, show login
+                        const btnLogin = document.getElementById('btn-login');
+                        if (btnLogin) btnLogin.click();
+                    } else {
+                        // Already logged in, show user card dropdown
+                        const card = document.getElementById('user-card');
+                        if (card) {
+                            const dropdown = card.querySelector('.user-dropdown');
+                            if (dropdown) {
+                                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                            }
+                        }
+                    }
+                };
             }
 
             // Helper: Show Custom Modal

@@ -1024,7 +1024,7 @@ app.get('/api/admin/users', async (req, res) => {
     try {
         const result = await db.query(`
             SELECT id, openid, nickname, avatar_url, is_vip, vip_expire_time, 
-                   phone, phone_verified, wechat_bound, created_at 
+                   phone, phone_verified, wechat_bound, device_type, created_at 
             FROM users 
             ORDER BY created_at DESC
         `);
@@ -1038,6 +1038,7 @@ app.get('/api/admin/users', async (req, res) => {
                 vipExpire: u.vip_expire_time,
                 phone: u.phone,
                 hasWechat: !!u.openid,
+                deviceType: u.device_type === 'mobile' ? '手机' : (u.device_type === 'pc' ? '电脑' : '未知'),
                 createdAt: u.created_at
             }))
         });

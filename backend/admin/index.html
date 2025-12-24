@@ -276,7 +276,8 @@
                         <tr>
                             <th>头像</th>
                             <th>昵称</th>
-                            <th>状态</th>
+                            <th>是否付费</th>
+                            <th>设备</th>
                             <th>登录方式</th>
                             <th>注册时间</th>
                             <th>操作</th>
@@ -491,9 +492,9 @@
 
                 userList.innerHTML = '';
                 data.users.forEach(user => {
-                    const vipBadge = user.isVip
-                        ? '<span style="background:#ffc107; color:#000; padding:2px 6px; border-radius:4px; font-size:11px;">VIP</span>'
-                        : '<span style="background:#6c757d; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">普通</span>';
+                    const paidBadge = user.isVip
+                        ? '<span style="background:#28a745; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">已付费</span>'
+                        : '<span style="background:#6c757d; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">未付费</span>';
                     const loginMethod = user.hasWechat
                         ? '<span style="color:#28a745;">微信</span>'
                         : (user.phone ? '<span style="color:#17a2b8;">手机</span>' : '<span style="color:#999;">未知</span>');
@@ -503,7 +504,8 @@
                         <tr>
                             <td><img src="${user.avatar || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
                             <td><strong>${user.nickname}</strong>${user.phone ? '<br><small style="color:#666;">' + user.phone + '</small>' : ''}</td>
-                            <td>${vipBadge}</td>
+                            <td>${paidBadge}</td>
+                            <td>${user.deviceType || '未知'}</td>
                             <td>${loginMethod}</td>
                             <td><small>${createdAt}</small></td>
                             <td>
@@ -516,7 +518,7 @@
                     `;
                 });
             } catch (error) {
-                userList.innerHTML = `<tr><td colspan="6" style="color:red;">${error.message}</td></tr>`;
+                userList.innerHTML = `<tr><td colspan="7" style="color:red;">${error.message}</td></tr>`;
             }
         }
 

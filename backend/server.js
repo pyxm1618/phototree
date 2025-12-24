@@ -888,15 +888,28 @@ app.get('/api/dev/init-db', async (req, res) => {
         await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_referrer ON profit_sharing_records(referrer_code);`);
         await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_status ON profit_sharing_records(status);`);
 
-        // 6. 为手机号登录添加字段
+        // 6. 为已存在的 users 表添加分销系统字段
+        try {
+            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referrer_code TEXT;`);
+            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS own_referral_code TEXT;`);
+            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS device_type TEXT;`);
+            console.log('[DB] Referral columns added to users table');
+        } catch (e) {
+            console.log('[DB] Referral columns may already exist:', e.message);
+        }
+
+        // 7. 为手机号登录添加字段
         try {
             await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT UNIQUE;`);
             await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT false;`);
             await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wechat_bound BOOLEAN DEFAULT false;`);
-        } catch (e) { /* ignore if exists */ }
+            console.log('[DB] Phone columns added to users table');
+        } catch (e) {
+            console.log('[DB] Phone columns may already exist:', e.message);
+        }
         await db.query(`CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);`);
 
-        // 7. 创建短信验证码表
+        // 8. 创建短信验证码表
         await db.query(`
           CREATE TABLE IF NOT EXISTS sms_codes (
             id SERIAL PRIMARY KEY,

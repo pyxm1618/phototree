@@ -986,6 +986,53 @@ app.delete('/api/dev/clear-test-data', async (req, res) => {
 });
 
 /**
+ * @route DELETE /api/admin/users/:id
+ * @desc 删除指定ID的用户
+ */
+app.delete('/api/admin/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: '用户不存在' });
+        }
+        res.json({ success: true, deleted: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route GET /api/admin/users
+ * @desc 获取所有用户列表（用于后台显示）
+ */
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT id, openid, nickname, avatar_url, is_vip, vip_expire_time, 
+                   phone, phone_verified, wechat_bound, created_at 
+            FROM users 
+            ORDER BY created_at DESC
+        `);
+        res.json({
+            total: result.rows.length,
+            users: result.rows.map(u => ({
+                id: u.id,
+                nickname: u.nickname || '未设置昵称',
+                avatar: u.avatar_url,
+                isVip: u.is_vip === 1,
+                vipExpire: u.vip_expire_time,
+                phone: u.phone,
+                hasWechat: !!u.openid,
+                createdAt: u.created_at
+            }))
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * @route GET /api/dev/fix-db
  * @desc 修复数据库字段（强制添加缺失的列）
  */

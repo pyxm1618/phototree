@@ -1821,12 +1821,16 @@
                         // Background transparent, text light.
                         const customCss = "data:text/css;base64,LmltcG93ZXJCb3ggLnFyY29kZSB7d2lkdGg6IDIwMHB4O30KLmltcG93ZXJCb3ggLnRpdGxlIHtkaXNwbGF5OiBub25lO30KLmltcG93ZXJCb3ggLmluZm8ge2Rpc3BsYXk6IG5vbmU7fQ0KLmltcG93ZXJCb3ggLnN0YXR1cyB7Y29sb3I6ICNjY2M7fQ==";
 
+                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                        const deviceType = isMobile ? 'mobile' : 'pc';
+                        const redirectUrl = `https://aiguess.cn/api/callback/wechat?device=${deviceType}`;
+
                         new WxLogin({
                             self_redirect: false,
                             id: "login_container",
                             appid: "wxb243ed29b96f8a49",
                             scope: "snsapi_login",
-                            redirect_uri: encodeURIComponent("https://aiguess.cn/api/callback/wechat"),
+                            redirect_uri: encodeURIComponent(redirectUrl),
                             state: Math.random().toString(36).substr(2),
                             style: "black",
                             href: customCss

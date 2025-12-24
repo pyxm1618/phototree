@@ -918,8 +918,12 @@ app.post('/api/admin/redemption/generate', async (req, res) => {
                 );
                 codes.push(code);
             } catch (err) {
-                // 如果重复，跳过
-                console.log(`[Redemption] Code ${code} duplicate, skip`);
+                // 如果是唯一键冲突（重复），跳过；其他错误抛出
+                if (err.code === '23505') {
+                    console.log(`[Redemption] Code ${code} duplicate, skip`);
+                } else {
+                    throw err;
+                }
             }
         }
 

@@ -336,9 +336,34 @@
                 </table>
 
                 <p style="color:#999; font-size:12px; margin-top:16px; text-align:center;">
-                    💡 用户访问 <a href="https://www.aiguess.cn/invite.html" target="_blank"
+                    用户访问 <a href="https://www.aiguess.cn/invite.html" target="_blank"
                         style="color:#667eea;">www.aiguess.cn/invite.html</a> 可自助生成邀请链接
                 </p>
+            </div>
+
+            <!-- 兑换码管理 -->
+            <div class="section">
+                <div class="section-title">兑换码管理</div>
+                <div style="display: flex; gap: 16px; align-items: start; flex-wrap: wrap;">
+                    <div>
+                        <button onclick="generateRedemptionCodes()"
+                            style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                            生成 10 个兑换码
+                        </button>
+                        <p style="color:#999; font-size:12px; margin-top:8px;">每个兑换码可兑换 1 年 Premium 会员</p>
+                    </div>
+                    <div style="flex: 1; min-width: 280px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-weight: bold; color: #333;">生成结果</span>
+                            <button onclick="copyRedemptionCodes()" id="copy-codes-btn"
+                                style="font-size:12px; padding:4px 12px; display:none;">一键复制</button>
+                        </div>
+                        <textarea id="redemption-codes-output" readonly
+                            style="width:100%; height:220px; border:1px solid #ddd; border-radius:6px; padding:12px; font-family:monospace; font-size:14px; resize: none; background:#f9f9f9;"
+                            placeholder="点击左侧按钮生成兑换码..."></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -569,6 +594,46 @@
             } catch (error) {
                 alert('删除失败: ' + error.message);
             }
+        }
+
+        // 生成兑换码
+        async function generateRedemptionCodes() {
+            const output = document.getElementById('redemption-codes-output');
+            const copyBtn = document.getElementById('copy-codes-btn');
+            output.value = '正在生成...';
+            copyBtn.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/redemption/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: 10 })
+                });
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                if (data.codes && data.codes.length > 0) {
+                    output.value = data.codes.join('\n');
+                    copyBtn.style.display = 'block';
+                } else {
+                    output.value = '未生成任何兑换码';
+                }
+            } catch (error) {
+                output.value = '生成失败: ' + error.message;
+            }
+        }
+
+        // 复制兑换码
+        function copyRedemptionCodes() {
+            const output = document.getElementById('redemption-codes-output');
+            navigator.clipboard.writeText(output.value).then(() => {
+                alert('已复制 ' + output.value.split('\n').length + ' 个兑换码到剪贴板');
+            }).catch(() => {
+                output.select();
+                document.execCommand('copy');
+                alert('已复制到剪贴板');
+            });
         }
 
         function showQrCode(code) {

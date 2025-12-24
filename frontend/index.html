@@ -1231,7 +1231,7 @@
             }, 3000);
         }
 
-        function handleRedemption() {
+        async function handleRedemption() {
             const codeInput = document.getElementById('redemption-code');
             const code = codeInput.value.trim();
 
@@ -1240,29 +1240,38 @@
                 return;
             }
 
-            // Mock Validation Logic
-            if (code.length > 4) {
-                showToast('兑换成功！已为您解锁 Premium', 'success');
-                document.getElementById('redemption-modal').style.display = 'none';
+            if (!currentUser || !currentUser.openid) {
+                showToast('请先登录', 'error');
+                return;
+            }
 
-                // Simulate success callback (update UI etc.)
-                // In real implementation, this would call an API
-                if (API && API.devForceVip && currentUser) {
-                    // Optionally call devForceVip for demo if in dev mode, 
-                    // or just update local state for the UI effect
-                    alert('兑换成功 (模拟): ' + code);
+            try {
+                const response = await fetch('/api/redemption/redeem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, openid: currentUser.openid })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast(data.message || '兑换成功！', 'success');
+                    document.getElementById('redemption-modal').style.display = 'none';
+
+                    // Update UI to show VIP status
+                    currentUser.is_vip = 1;
+                    localStorage.setItem('userInfo', JSON.stringify(currentUser));
+
+                    const card = document.getElementById('user-card');
+                    if (card) {
+                        card.classList.add('vip-active');
+                        const btnPay = document.getElementById('btn-pay');
+                        if (btnPay) btnPay.style.display = 'none';
+                    }
+                } else {
+                    showToast(data.error || '兑换失败', 'error');
                 }
-
-                // Update UI to show VIP status (Mock)
-                const card = document.getElementById('user-card');
-                if (card) {
-                    card.classList.add('vip-active');
-                    const btnPay = document.getElementById('btn-pay');
-                    if (btnPay) btnPay.style.display = 'none';
-                }
-
-            } else {
-                showToast('无效的兑换码', 'error');
+            } catch (err) {
+                showToast('网络错误，请重试', 'error');
             }
         }
     </script>

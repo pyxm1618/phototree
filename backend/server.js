@@ -893,6 +893,103 @@ app.get('/api/admin/kol-stats', async (req, res) => {
 });
 
 /**
+ * @route POST /api/admin/redemption/generate
+ * @desc 批量生成兑换码（管理员）
+ */
+app.post('/api/admin/redemption/generate', async (req, res) => {
+    const { count = 10 } = req.body;
+    const maxCount = Math.min(count, 50); // 限制单次最多50个
+
+    try {
+        const codes = [];
+        for (let i = 0; i < maxCount; i++) {
+            // 生成 8 位大写字母+数字的兑换码
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去掉容易混淆的字符
+            let code = '';
+            for (let j = 0; j < 8; j++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            // 插入数据库
+            try {
+                await db.query(
+                    'INSERT INTO redemption_codes (code, status) VALUES ($1, $2)',
+                    [code, 'unused']
+                );
+                codes.push(code);
+            } catch (err) {
+                // 如果重复，跳过
+                console.log(`[Redemption] Code ${code} duplicate, skip`);
+            }
+        }
+
+        console.log(`[Redemption] Generated ${codes.length} codes`);
+        res.json({ success: true, codes });
+
+    } catch (err) {
+        console.error('[Redemption] Generate Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route POST /api/redemption/redeem
+ * @desc 兑换码核销（用户）
+ */
+app.post('/api/redemption/redeem', async (req, res) => {
+    const { code, openid } = req.body;
+
+    if (!code || !openid) {
+        return res.status(400).json({ error: '参数缺失' });
+    }
+
+    try {
+        // 1. 查询兑换码
+        const result = await db.query(
+            'SELECT * FROM redemption_codes WHERE code = $1',
+            [code.toUpperCase()]
+        );
+
+        if (result.rows.length === 0) {
+            return res.json({ success: false, error: '兑换码不存在' });
+        }
+
+        const redemptionCode = result.rows[0];
+
+        if (redemptionCode.status === 'used') {
+            return res.json({ success: false, error: '兑换码已被使用' });
+        }
+
+        // 2. 更新用户 VIP 状态
+        const vipExpireAt = new Date();
+        vipExpireAt.setFullYear(vipExpireAt.getFullYear() + 1); // 一年有效期
+
+        await db.query(
+            `UPDATE users SET is_vip = 1, vip_expire_at = $1 WHERE openid = $2`,
+            [vipExpireAt.toISOString(), openid]
+        );
+
+        // 3. 标记兑换码已使用
+        await db.query(
+            `UPDATE redemption_codes SET status = 'used', used_at = NOW(), used_by = $1 WHERE code = $2`,
+            [openid, code.toUpperCase()]
+        );
+
+        console.log(`[Redemption] Code ${code} redeemed by ${openid}`);
+
+        res.json({
+            success: true,
+            message: '兑换成功！您已成为年度 Premium 会员',
+            vipExpireAt: vipExpireAt.toISOString()
+        });
+
+    } catch (err) {
+        console.error('[Redemption] Redeem Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * Helper: 执行微信支付分账
  */
 async function executeProfitSharing(transactionId, outTradeNo, referrerCode, totalAmount) {
@@ -1257,6 +1354,20 @@ app.get('/api/dev/init-db', async (req, res) => {
         `);
         await db.query(`CREATE INDEX IF NOT EXISTS idx_sms_phone ON sms_codes(phone);`);
         await db.query(`CREATE INDEX IF NOT EXISTS idx_sms_expires ON sms_codes(expires_at);`);
+
+        // 9. 创建兑换码表
+        await db.query(`
+          CREATE TABLE IF NOT EXISTS redemption_codes (
+            id SERIAL PRIMARY KEY,
+            code VARCHAR(16) UNIQUE NOT NULL,
+            status VARCHAR(20) DEFAULT 'unused',
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            used_at TIMESTAMP WITH TIME ZONE,
+            used_by VARCHAR(64)
+          );
+        `);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_redemption_code ON redemption_codes(code);`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_redemption_status ON redemption_codes(status);`);
 
         console.log('[DB] All tables created/updated successfully');
         res.send("Database initialized/updated successfully! All tables created.");

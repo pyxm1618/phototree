@@ -203,8 +203,7 @@
 
         <div id="env-indicator"
             style="text-align:center; margin-bottom:20px; font-size:14px; color:rgba(255,255,255,0.9); background:rgba(0,0,0,0.1); padding:8px; border-radius:4px;">
-            当前环境: <span style="color:#28a745">🟢 线上生产 (aiguess.cn)</span> | <a href="#" onclick="toggleEnv()"
-                style="color:white; text-decoration:underline;">切换到本地</a>
+            🟢 线上生产环境 (www.aiguess.cn) - 真实数据
         </div>
 
 
@@ -324,20 +323,8 @@
     </div>
 
     <script>
-        // 默认连接线上环境，因为用户主要目的是监控线上
-        let API_BASE = 'https://www.aiguess.cn';
-
-        // 允许用户临时切换回本地（用于调试）
-        function toggleEnv() {
-            if (API_BASE.includes('localhost')) {
-                API_BASE = 'https://www.aiguess.cn';
-                document.getElementById('env-indicator').innerHTML = '当前环境: <span style="color:#28a745">🟢 线上生产 (aiguess.cn)</span> | <a href="#" onclick="toggleEnv()">切换到本地</a>';
-            } else {
-                API_BASE = 'http://localhost:3000';
-                document.getElementById('env-indicator').innerHTML = '当前环境: <span style="color:#ffc107">🟡 本地测试 (localhost)</span> | <a href="#" onclick="toggleEnv()">切换到线上</a>';
-            }
-            loadStats(); // 重新加载
-        }
+        // 固定连接线上环境，显示真实数据
+        const API_BASE = 'https://www.aiguess.cn';
 
         async function loadStats() {
             const loading = document.getElementById('loading');

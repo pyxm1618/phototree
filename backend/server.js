@@ -571,16 +571,25 @@ app.get('/api/admin/stats', async (req, res) => {
             GROUP BY device_type
         `);
 
-        // Daily stats (last 7 days)
-        const dailyStats = await db.query(`
+        // Hourly stats (last 24 hours)
+        const hourlyStats = await db.query(`
             SELECT 
-                DATE(created_at) as date,
+                DATE_TRUNC('hour', created_at) as hour,
                 COUNT(*) as pv,
                 COUNT(DISTINCT session_id) as uv
             FROM page_views
-            WHERE created_at >= NOW() - INTERVAL '7 days'
-            GROUP BY DATE(created_at)
-            ORDER BY date DESC
+            WHERE created_at >= NOW() - INTERVAL '24 hours'
+            GROUP BY DATE_TRUNC('hour', created_at)
+            ORDER BY hour DESC
+        `);
+
+        // Total all-time stats
+        const totalStats = await db.query(`
+            SELECT 
+                COUNT(*) as total_pv,
+                COUNT(DISTINCT session_id) as total_uv,
+                MIN(created_at) as first_visit
+            FROM page_views
         `);
 
         // Top referral codes (容错：如果 referrer_code 字段不存在则返回空)
@@ -615,10 +624,15 @@ app.get('/api/admin/stats', async (req, res) => {
                     : '0%'
             },
             deviceDistribution: deviceResult.rows.reduce((acc, row) => {
-                acc[row.device_type || 'unknown'] = parseInt(row.count);
+                // 更友好的设备名称
+                const deviceName = row.device_type === 'pc' ? '电脑'
+                    : row.device_type === 'mobile' ? '手机'
+                        : row.device_type || '未知';
+                acc[deviceName] = parseInt(row.count);
                 return acc;
             }, {}),
-            dailyStats: dailyStats.rows,
+            totalStats: totalStats.rows[0] || { total_pv: 0, total_uv: 0, first_visit: null },
+            hourlyStats: hourlyStats.rows,
             topReferrals: topReferrals.rows
         });
     } catch (err) {

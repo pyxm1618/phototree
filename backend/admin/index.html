@@ -244,18 +244,26 @@
                 <div class="device-chart" id="device-chart"></div>
             </div>
 
-            <!-- 每日统计 (最近7天) -->
+            <!-- 总计统计 -->
             <div class="section">
-                <div class="section-title">近7日数据</div>
+                <div class="section-title">历史总计</div>
+                <div id="total-stats-info" style="padding: 10px; background: rgba(0,0,0,0.1); border-radius: 8px;">
+                    加载中...
+                </div>
+            </div>
+
+            <!-- 小时统计 (最近24小时) -->
+            <div class="section">
+                <div class="section-title">近24小时数据</div>
                 <table>
                     <thead>
                         <tr>
-                            <th>日期</th>
+                            <th>时间</th>
                             <th>UV</th>
                             <th>PV</th>
                         </tr>
                     </thead>
-                    <tbody id="daily-stats"></tbody>
+                    <tbody id="hourly-stats"></tbody>
                 </table>
             </div>
 
@@ -299,12 +307,13 @@
             <div class="section">
                 <div class="section-title">创建新邀请码</div>
                 <div class="create-code-form">
-                    <input type="text" id="new-code" placeholder="邀请码 (如: KOL_XIAOMING)" required>
-                    <input type="text" id="new-owner" placeholder="KOL名称" required>
+                    <input type="text" id="new-owner" placeholder="KOL名称 (如: 小红、张三)" required style="flex:2;">
                     <input type="text" id="new-contact" placeholder="联系方式 (可选)">
-                    <input type="number" id="new-rate" placeholder="佣金比例 (可选)" step="0.01">
-                    <button onclick="createReferralCode()">创建</button>
+                    <button onclick="createReferralCode()">🎫 一键生成邀请码</button>
                 </div>
+                <p style="color:#999; font-size:12px; margin-top:8px;">
+                    * 邀请码自动生成，佣金比例默认30%（与微信商户平台一致）
+                </p>
             </div>
 
             <!-- 分账接收方管理 ⭐ 新增 -->
@@ -388,16 +397,34 @@
                     `;
                 });
 
-                // 每日统计
-                const dailyStats = document.getElementById('daily-stats');
-                dailyStats.innerHTML = '';
-                if (data.dailyStats.length === 0) {
-                    dailyStats.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">暂无数据</td></tr>';
+                // 总计统计
+                const totalStatsInfo = document.getElementById('total-stats-info');
+                if (data.totalStats) {
+                    const firstVisit = data.totalStats.first_visit
+                        ? new Date(data.totalStats.first_visit).toLocaleDateString('zh-CN')
+                        : '无数据';
+                    totalStatsInfo.innerHTML = `
+                        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                            <div><strong>总 PV：</strong>${data.totalStats.total_pv || 0}</div>
+                            <div><strong>总 UV：</strong>${data.totalStats.total_uv || 0}</div>
+                            <div><strong>首次访问：</strong>${firstVisit}</div>
+                        </div>
+                    `;
+                }
+
+                // 小时统计
+                const hourlyStats = document.getElementById('hourly-stats');
+                hourlyStats.innerHTML = '';
+                if (!data.hourlyStats || data.hourlyStats.length === 0) {
+                    hourlyStats.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #999;">暂无数据</td></tr>';
                 } else {
-                    data.dailyStats.forEach(row => {
-                        dailyStats.innerHTML += `
+                    data.hourlyStats.forEach(row => {
+                        const hour = new Date(row.hour).toLocaleString('zh-CN', {
+                            month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                        });
+                        hourlyStats.innerHTML += `
                             <tr>
-                                <td>${row.date}</td>
+                                <td>${hour}</td>
                                 <td>${row.uv}</td>
                                 <td>${row.pv}</td>
                             </tr>
@@ -537,16 +564,29 @@
             document.getElementById('qr-modal').style.display = 'none';
         }
 
+        // 生成随机邀请码
+        function generateCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 排除易混淆字符
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
         async function createReferralCode() {
-            const code = document.getElementById('new-code').value.trim();
             const ownerName = document.getElementById('new-owner').value.trim();
             const ownerContact = document.getElementById('new-contact').value.trim();
-            const commissionRate = parseFloat(document.getElementById('new-rate').value) || 0;
 
-            if (!code || !ownerName) {
-                alert('请填写邀请码和KOL名称');
+            if (!ownerName) {
+                alert('请填写KOL名称');
                 return;
             }
+
+            // 自动生成邀请码
+            const code = generateCode();
+            // 固定30%佣金（与微信商户平台一致）
+            const commissionRate = 0.30;
 
             try {
                 const response = await fetch(`${API_BASE}/api/referral/create`, {
@@ -563,15 +603,15 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(`✅ 邀请码创建成功！`); // 简化提示，之后会刷新显示二维码按钮
+                    const inviteUrl = `https://www.aiguess.cn/?ref=${code}`;
                     // 清空表单
-                    document.getElementById('new-code').value = '';
                     document.getElementById('new-owner').value = '';
                     document.getElementById('new-contact').value = '';
-                    document.getElementById('new-rate').value = '';
-                    // 刷新数据以显示新邀请码和二维码按钮
+                    // 刷新数据
                     loadStats();
-                    // 自动弹出二维码
+                    // 显示成功信息和链接
+                    alert(`✅ 邀请码创建成功！\n\n邀请码: ${code}\n链接: ${inviteUrl}\n\n点击确定查看二维码`);
+                    // 直接弹出二维码
                     showQrCode(code);
                 } else {
                     alert('❌ 创建失败: ' + (data.error || '未知错误'));

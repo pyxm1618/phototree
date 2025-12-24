@@ -1250,6 +1250,24 @@ app.get('/api/dev/check-user-referrer', async (req, res) => {
 });
 
 /**
+ * @route GET /api/dev/all-referral-codes
+ * @desc [DEBUG] List all referral codes with receiver info
+ */
+app.get('/api/dev/all-referral-codes', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT code, owner_name, receiver_openid, sharing_percentage, is_active, created_at
+            FROM referral_codes
+            ORDER BY created_at DESC
+        `);
+        res.json({ success: true, codes: result.rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+/**
  * @route POST /api/dev/force-vip
  * @desc [EMERGENCY] Manually set VIP (Use after confirmed payment)
  */

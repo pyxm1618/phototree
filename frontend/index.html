@@ -1105,18 +1105,24 @@
         <div
             style="background: linear-gradient(135deg, #0f1520 0%, #1a2332 100%); border: 2px solid #d4af37; padding: 40px 30px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; position: relative; box-shadow: 0 0 50px rgba(212, 175, 55, 0.4);">
             <div class="close-vip-benefits" onclick="document.getElementById('vip-benefits-modal').style.display='none'"
-                style="position:absolute; top:15px; right:20px; color:#d4af37; cursor:pointer; font-size:28px; transition: transform 0.3s;"
+                style="position:absolute; top:15px; right:20px; color:#d4af37; cursor:pointer; font-size:28px; transition: transform 0.3s; z-index: 2;"
                 onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">×
+            </div>
+
+            <!-- Redemption Link (Top Right) -->
+            <div onclick="openRedemptionModal()"
+                style="position:absolute; top:20px; right:60px; color:rgba(212,175,55,0.8); cursor:pointer; font-size:14px; text-decoration:underline; z-index: 2;">
+                兑换
             </div>
 
             <h2
                 style="color:#d4af37; font-family:'Cinzel',serif; font-size:26px; margin-bottom:25px; letter-spacing:2px;">
-                🎄 PREMIUM 会员权益</h2>
+                PREMIUM 会员权益</h2>
 
             <div style="text-align:left; margin-bottom:30px;">
                 <div
                     style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:12px; background:rgba(212,175,55,0.1); border-radius:8px; border-left:3px solid #d4af37;">
-                    <span style="font-size:24px;">📸</span>
+                    <!-- Remove Emoji -->
                     <div>
                         <div style="color:#d4af37; font-weight:bold; font-size:14px; margin-bottom:3px;">上传专属照片</div>
                         <div style="color:#aaa; font-size:12px;">在3D圣诞树中展示您的珍贵回忆</div>
@@ -1125,7 +1131,7 @@
 
                 <div
                     style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:12px; background:rgba(212,175,55,0.1); border-radius:8px; border-left:3px solid #d4af37;">
-                    <span style="font-size:24px;">🎵</span>
+                    <!-- Remove Emoji -->
                     <div>
                         <div style="color:#d4af37; font-weight:bold; font-size:14px; margin-bottom:3px;">自定义背景音乐</div>
                         <div style="color:#aaa; font-size:12px;">打造独一无二的节日氛围</div>
@@ -1134,7 +1140,7 @@
 
                 <div
                     style="display:flex; align-items:center; gap:12px; margin-bottom:18px; padding:12px; background:rgba(212,175,55,0.1); border-radius:8px; border-left:3px solid #d4af37;">
-                    <span style="font-size:24px;">🚀</span>
+                    <!-- Remove Emoji -->
                     <div>
                         <div style="color:#d4af37; font-weight:bold; font-size:14px; margin-bottom:3px;">享受未来更新</div>
                         <div style="color:#aaa; font-size:12px;">持续获得新功能与优化体验</div>
@@ -1147,7 +1153,7 @@
                 <div style="color:#d4af37; font-size:28px; font-weight:bold; margin-bottom:5px;">¥18 <span
                         style="text-decoration:line-through; color:#888; font-size:16px; margin-left:10px;">¥48</span>
                 </div>
-                <div style="color:#ffd966; font-size:13px; letter-spacing:1px;">🎄 圣诞特惠 · 一年有效期</div>
+                <div style="color:#ffd966; font-size:13px; letter-spacing:1px;">圣诞特惠 · 一年有效期</div>
             </div>
 
             <button
@@ -1155,8 +1161,112 @@
                 style="width:100%; background:linear-gradient(135deg, #d4af37 0%, #ffd966 100%); color:#000; border:none; padding:15px; font-size:16px; font-weight:bold; border-radius:8px; cursor:pointer; font-family:'Cinzel',serif; letter-spacing:2px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(212,175,55,0.4);"
                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(212,175,55,0.6)';"
                 onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(212,175,55,0.4)';">立即解锁
-                Premium ✨</button>
+                Premium</button>
         </div>
+    </div>
+
+    <!-- Redemption Modal (New) -->
+    <div id="redemption-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+        <div
+            style="background: #1a2332; border: 1px solid #d4af37; padding: 30px; border-radius: 12px; width: 90%; max-width: 320px; text-align: center;">
+            <h3 style="color:#d4af37; margin-bottom: 20px;">兑换会员</h3>
+            <input type="text" id="redemption-code" placeholder="请输入兑换码"
+                style="width: 100%; padding: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; border-radius: 6px; outline: none;">
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('redemption-modal').style.display='none'"
+                    style="flex: 1; padding: 10px; background: transparent; border: 1px solid #666; color: #aaa; border-radius: 6px; cursor: pointer;">取消</button>
+                <button onclick="handleRedemption()"
+                    style="flex: 1; padding: 10px; background: #d4af37; border: none; color: #000; font-weight: bold; border-radius: 6px; cursor: pointer;">兑换</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification (New) -->
+    <div id="toast-container"
+        style="position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; pointer-events: none;">
+    </div>
+
+    <script>
+        function openRedemptionModal() {
+            document.getElementById('vip-benefits-modal').style.display = 'none';
+            document.getElementById('redemption-modal').style.display = 'flex';
+            document.getElementById('redemption-code').value = '';
+            document.getElementById('redemption-code').focus();
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: ${type === 'success' ? 'rgba(40, 167, 69, 0.9)' : 'rgba(220, 53, 69, 0.9)'};
+                color: white;
+                padding: 10px 20px;
+                border-radius: 20px;
+                margin-bottom: 10px;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: fadeInOut 3s forwards;
+            `;
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            // Define animation if not exists
+            if (!document.getElementById('toast-style')) {
+                const style = document.createElement('style');
+                style.id = 'toast-style';
+                style.innerHTML = `
+                    @keyframes fadeInOut {
+                        0% { opacity: 0; transform: translateY(20px); }
+                        10% { opacity: 1; transform: translateY(0); }
+                        90% { opacity: 1; transform: translateY(0); }
+                        100% { opacity: 0; transform: translateY(-20px); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function handleRedemption() {
+            const codeInput = document.getElementById('redemption-code');
+            const code = codeInput.value.trim();
+
+            if (!code) {
+                showToast('请输入兑换码', 'error');
+                return;
+            }
+
+            // Mock Validation Logic
+            if (code.length > 4) {
+                showToast('兑换成功！已为您解锁 Premium', 'success');
+                document.getElementById('redemption-modal').style.display = 'none';
+
+                // Simulate success callback (update UI etc.)
+                // In real implementation, this would call an API
+                if (API && API.devForceVip && currentUser) {
+                    // Optionally call devForceVip for demo if in dev mode, 
+                    // or just update local state for the UI effect
+                    alert('兑换成功 (模拟): ' + code);
+                }
+
+                // Update UI to show VIP status (Mock)
+                const card = document.getElementById('user-card');
+                if (card) {
+                    card.classList.add('vip-active');
+                    const btnPay = document.getElementById('btn-pay');
+                    if (btnPay) btnPay.style.display = 'none';
+                }
+
+            } else {
+                showToast('无效的兑换码', 'error');
+            }
+        }
+    </script>
+    </div>
     </div>
 
     <!-- Pay Modal (Redesigned) -->

@@ -1914,6 +1914,9 @@
 
         function handleLoginSuccess(user) {
             currentUser = user;
+            // Persist login state
+            localStorage.setItem('userInfo', JSON.stringify(user));
+
             const btnLogin = document.getElementById('btn-login');
             if (btnLogin) btnLogin.style.display = 'none';
 

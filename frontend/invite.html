@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>邀请返佣 - PhotoTree</title>
+    <title>尊享合伙人计划 - Grand Luxury Tree</title>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -15,300 +16,380 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: radial-gradient(circle at center, #0f2027 0%, #203a43 50%, #2c5364 100%);
             min-height: 100vh;
+            color: #fff;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .container {
-            max-width: 500px;
+            width: 100%;
+            max-width: 480px;
             margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 装饰背景光 */
+        .glow-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .header {
             text-align: center;
-            color: white;
-            margin-bottom: 24px;
+            margin-bottom: 40px;
+            margin-top: 20px;
         }
 
-        .header h1 {
-            font-size: 28px;
+        .logo {
+            font-family: 'Cinzel', serif;
+            color: #d4af37;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .title-main {
+            font-size: 32px;
+            font-weight: 700;
             margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, #d4af37, #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
         }
 
-        .header p {
-            opacity: 0.9;
+        .subtitle {
             font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        .card {
-            background: white;
-            border-radius: 16px;
+        /* 核心卖点卡片 */
+        .glass-card {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
             padding: 24px;
-            margin-bottom: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .benefits {
-            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
-            border-radius: 12px;
-            padding: 16px;
+        .highlight-box {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
         }
 
-        .benefit-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            color: #856404;
-            font-size: 14px;
+        .percent-box {
+            font-size: 64px;
+            font-weight: 800;
+            color: #d4af37;
+            line-height: 1;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+            font-family: 'Cinzel', serif;
         }
 
-        .benefit-item:last-child {
-            margin-bottom: 0;
+        .percent-label {
+            font-size: 16px;
+            color: #fff;
+            margin-top: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .feature-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.4;
+        }
+
+        .feature-highlight {
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        /* 按钮与操作区 */
+        .action-area {
+            text-align: center;
         }
 
         .generate-btn {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #000;
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             font-size: 18px;
-            font-weight: 600;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-weight: bold;
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
         }
 
         .generate-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
         }
 
         .generate-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        .result-section {
+        .login-btn-large {
+            background: #07c160;
+            color: white;
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        /* 结果展示区 */
+        .result-box {
             display: none;
-            text-align: center;
+            animation: fadeIn 0.5s ease;
         }
 
-        .invite-code {
-            font-size: 32px;
-            font-weight: 700;
-            color: #667eea;
-            letter-spacing: 4px;
-            margin: 16px 0;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .invite-url {
-            background: #f8f9fa;
+        .code-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px dashed rgba(212, 175, 55, 0.5);
             padding: 12px;
             border-radius: 8px;
-            font-size: 12px;
-            color: #666;
-            word-break: break-all;
-            margin-bottom: 16px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 24px;
+            color: #d4af37;
+            letter-spacing: 4px;
         }
 
-        .qrcode-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        #qrcode {
-            padding: 10px;
+        .qrcode-wrapper {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 16px 0;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
         }
 
-        .copy-btn {
-            padding: 12px 24px;
-            font-size: 14px;
-            color: white;
-            background: #28a745;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 8px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+        .tool-btns {
+            display: flex;
             gap: 12px;
             margin-top: 16px;
         }
 
-        .stat-item {
-            text-align: center;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 12px;
+        .tool-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #667eea;
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 数据统计 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 10px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 4px;
+            font-family: 'Cinzel', serif;
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .back-link {
             display: block;
             text-align: center;
-            color: white;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 30px;
             text-decoration: none;
-            margin-top: 20px;
-            opacity: 0.8;
+            font-size: 14px;
         }
 
         .back-link:hover {
-            opacity: 1;
-        }
-
-        .login-prompt {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .login-prompt p {
-            margin-bottom: 20px;
-            color: #666;
-        }
-
-        .login-btn {
-            padding: 14px 40px;
-            font-size: 16px;
-            color: white;
-            background: #07c160;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .share-tip {
-            background: #e3f2fd;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #1565c0;
-            margin-top: 16px;
+            color: #d4af37;
         }
     </style>
 </head>
 
 <body>
+    <div class="glow-bg"></div>
+
     <div class="container">
         <div class="header">
-            <h1>💰 邀请返佣</h1>
-            <p>分享专属链接，好友付费您得30%返佣</p>
+            <div class="logo">GRAND LUXURY TREE</div>
+            <h1 class="title-main">尊享合伙人计划</h1>
+            <p class="subtitle" id="welcome-msg">诚邀您的加入，共赏璀璨</p>
         </div>
 
-        <!-- 未登录提示 -->
-        <div class="card" id="login-card" style="display: none;">
-            <div class="login-prompt">
-                <p>请先登录后生成专属邀请链接</p>
-                <button class="login-btn" onclick="goLogin()">微信登录</button>
+        <!-- 登录提示卡片 -->
+        <div id="login-card" class="glass-card" style="display: none; text-align: center;">
+            <p style="margin-bottom: 20px; font-size: 16px; line-height: 1.6;">
+                加入尊享合伙人计划<br>
+                需先验证您的身份
+            </p>
+            <button class="login-btn-large" onclick="goLogin()">微信一键登录</button>
+        </div>
+
+        <!-- 主功能区 -->
+        <div id="main-content" style="display: none;">
+            <!-- 核心卖点 -->
+            <div class="glass-card">
+                <div class="highlight-box">
+                    <div class="percent-box">30%</div>
+                    <div class="percent-label">高额现金返佣</div>
+                </div>
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-text">好友付费<br><span class="feature-highlight">秒结算</span></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💸</div>
+                        <div class="feature-text">自动打入<br><span class="feature-highlight">微信零钱</span></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">♾️</div>
+                        <div class="feature-text">推广名额<br><span class="feature-highlight">无上限</span></div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-text">实时数据<br><span class="feature-highlight">透明可查</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作/结果区 -->
+            <div class="glass-card action-area">
+                <!-- 生成按钮 -->
+                <div id="generate-section">
+                    <button class="generate-btn" onclick="generateInviteCode()">
+                        ✨ 生成我的专属海报
+                    </button>
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.5);">点击即表示同意合伙人协议</p>
+                </div>
+
+                <!-- 生成结果 -->
+                <div id="result-section" class="result-box">
+                    <p style="color: #4cd964; margin-bottom: 10px;">✅ 专属链接已生成</p>
+
+                    <div class="qrcode-wrapper">
+                        <div id="qrcode"></div>
+                    </div>
+
+                    <div class="code-display" id="invite-code"></div>
+                    <p style="font-size: 12px; color: #999; margin-bottom: 15px; word-break: break-all;"
+                        id="invite-url"></p>
+
+                    <div class="tool-btns">
+                        <button class="tool-btn" onclick="copyUrl()">🔗 复制链接</button>
+                        <button class="tool-btn" onclick="saveQrCode()"
+                            style="background: rgba(212, 175, 55, 0.2); border-color: rgba(212, 175, 55, 0.4);">💾
+                            保存二维码</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据统计 -->
+            <div class="glass-card" id="stats-card">
+                <div
+                    style="margin-bottom: 15px; font-weight: bold; color: #d4af37; border-left: 3px solid #d4af37; padding-left: 10px;">
+                    我的战绩
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-registered">0</div>
+                        <div class="stat-label">注册人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-paid">0</div>
+                        <div class="stat-label">付费人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-num" id="stat-earnings">¥0</div>
+                        <div class="stat-label">累计收益</div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 主内容区 -->
-        <div class="card" id="main-card" style="display: none;">
-            <div class="card-title">🎁 推广奖励</div>
-
-            <div class="benefits">
-                <div class="benefit-item">
-                    <span>💸</span>
-                    <span>好友通过您的链接付费，您获得 <strong>30%</strong> 返佣</span>
-                </div>
-                <div class="benefit-item">
-                    <span>⚡</span>
-                    <span>返佣直接到您的 <strong>微信零钱</strong>，秒到账</span>
-                </div>
-                <div class="benefit-item">
-                    <span>♾️</span>
-                    <span>无推广数量限制，推广越多赚越多</span>
-                </div>
-            </div>
-
-            <!-- 生成按钮 -->
-            <div id="generate-section">
-                <button class="generate-btn" onclick="generateInviteCode()">
-                    🎫 生成我的专属邀请链接
-                </button>
-            </div>
-
-            <!-- 结果展示 -->
-            <div class="result-section" id="result-section">
-                <p style="color: #28a745; font-weight: 600;">✅ 您的专属邀请码</p>
-                <div class="invite-code" id="invite-code"></div>
-
-                <div class="invite-url" id="invite-url"></div>
-
-                <div class="qrcode-container">
-                    <div id="qrcode"></div>
-                </div>
-
-                <div>
-                    <button class="copy-btn" onclick="copyUrl()">📋 复制链接</button>
-                    <button class="copy-btn" style="background: #17a2b8;" onclick="saveQrCode()">💾 保存二维码</button>
-                </div>
-
-                <div class="share-tip">
-                    💡 提示：长按二维码可保存到相册，分享到朋友圈或发给好友
-                </div>
-            </div>
-        </div>
-
-        <!-- 统计数据 -->
-        <div class="card" id="stats-card" style="display: none;">
-            <div class="card-title">📊 我的推广数据</div>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value" id="stat-registered">0</div>
-                    <div class="stat-label">注册人数</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="stat-paid">0</div>
-                    <div class="stat-label">付费人数</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="stat-earnings">¥0</div>
-                    <div class="stat-label">已获收益</div>
-                </div>
-            </div>
-        </div>
-
-        <a href="/" class="back-link">← 返回首页</a>
+        <a href="/" class="back-link">返回首页</a>
     </div>
 
     <script>
@@ -318,48 +399,53 @@
 
         // 页面加载
         window.addEventListener('load', async () => {
-            // 获取用户信息
-            const userInfo = getUserInfo();
+            // 尝试获取用户信息
+            let userInfo = getUserInfo();
 
             if (!userInfo || !userInfo.openid) {
-                // 未登录
+                // 如果没有登录，显示登录卡片
                 document.getElementById('login-card').style.display = 'block';
+                document.getElementById('welcome-msg').textContent = '请先登录开启尊享权益';
                 return;
             }
 
+            // 已登录
             currentOpenid = userInfo.openid;
-            document.getElementById('main-card').style.display = 'block';
-            document.getElementById('stats-card').style.display = 'block';
+            if (userInfo.nickname) {
+                document.getElementById('welcome-msg').textContent = `欢迎您，${userInfo.nickname}`;
+            }
 
-            // 加载现有数据
+            showMainContent();
             await loadMyStats();
         });
 
-        // 获取用户信息（从 localStorage）
         function getUserInfo() {
-            const stored = localStorage.getItem('userInfo');
-            if (stored) {
-                try {
+            try {
+                // 优先检查 localStorage 中的 userInfo
+                const stored = localStorage.getItem('userInfo');
+                if (stored) {
                     return JSON.parse(stored);
-                } catch (e) {
-                    return null;
                 }
+            } catch (e) {
+                console.error('Error parsing user info', e);
             }
             return null;
         }
 
-        // 跳转登录
-        function goLogin() {
-            // 记录来源页面
-            localStorage.setItem('redirectAfterLogin', '/invite.html');
-            window.location.href = '/'; // 跳转到首页进行微信登录
+        function showMainContent() {
+            document.getElementById('login-card').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
         }
 
-        // 生成邀请码
+        function goLogin() {
+            localStorage.setItem('redirectAfterLogin', '/invite.html');
+            window.location.href = '/';
+        }
+
         async function generateInviteCode() {
             const btn = document.querySelector('.generate-btn');
             btn.disabled = true;
-            btn.textContent = '生成中...';
+            btn.innerHTML = '正在为您配置专属权益...';
 
             try {
                 const response = await fetch(`${API_BASE}/api/referral/generate`, {
@@ -376,16 +462,15 @@
                 } else {
                     alert('生成失败：' + (data.error || '未知错误'));
                     btn.disabled = false;
-                    btn.textContent = '🎫 生成我的专属邀请链接';
+                    btn.innerHTML = '✨ 生成我的专属海报';
                 }
             } catch (err) {
-                alert('请求失败：' + err.message);
+                alert('请求失败，请检查网络');
                 btn.disabled = false;
-                btn.textContent = '🎫 生成我的专属邀请链接';
+                btn.innerHTML = '✨ 生成我的专属海报';
             }
         }
 
-        // 显示结果
         function showResult(code, url) {
             document.getElementById('generate-section').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
@@ -394,24 +479,26 @@
             document.getElementById('invite-url').textContent = url;
             currentUrl = url;
 
-            // 生成二维码
             const qrcodeContainer = document.getElementById('qrcode');
             qrcodeContainer.innerHTML = '';
             new QRCode(qrcodeContainer, {
                 text: url,
-                width: 180,
-                height: 180
+                width: 160,
+                height: 160,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
         }
 
-        // 加载我的统计数据
         async function loadMyStats() {
+            if (!currentOpenid) return;
             try {
                 const response = await fetch(`${API_BASE}/api/referral/my-stats?openid=${currentOpenid}`);
                 const data = await response.json();
 
                 if (data.success && data.hasCode) {
-                    // 显示已有的邀请码
+                    // 如果已有数据，直接显示结果页
                     showResult(data.code, data.url);
 
                     // 更新统计
@@ -424,25 +511,21 @@
             }
         }
 
-        // 复制链接
         function copyUrl() {
             navigator.clipboard.writeText(currentUrl).then(() => {
-                alert('✅ 链接已复制！\n\n' + currentUrl);
+                alert('链接已复制，快去分享给好友吧！');
             }).catch(() => {
-                prompt('请手动复制：', currentUrl);
+                prompt('长按复制链接：', currentUrl);
             });
         }
 
-        // 保存二维码
         function saveQrCode() {
             const canvas = document.querySelector('#qrcode canvas');
             if (canvas) {
                 const link = document.createElement('a');
-                link.download = 'invite-qrcode.png';
+                link.download = `invite-${currentOpenid.substring(0, 6)}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-            } else {
-                alert('请先生成二维码');
             }
         }
     </script>

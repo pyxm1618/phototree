@@ -1270,6 +1270,24 @@ app.post('/api/dev/force-vip', async (req, res) => {
 });
 
 /**
+ * @route POST /api/dev/reset-vip
+ * @desc [DEBUG] Reset user VIP status for testing
+ */
+app.post('/api/dev/reset-vip', async (req, res) => {
+    const { openid } = req.body;
+
+    console.log(`[Debug] Resetting VIP for ${openid}`);
+
+    try {
+        await db.query("UPDATE users SET is_vip = 0, vip_expire_time = 0, referrer_code = NULL WHERE openid = $1", [openid]);
+        console.log(`[Debug] ✅ User ${openid} VIP reset`);
+        res.json({ success: true, message: "User VIP status reset" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * @route GET /api/user/:openid
  * @desc Get latest user status
  */

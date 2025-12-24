@@ -343,9 +343,10 @@
 
             <div class="section">
                 <div class="section-title">兑换码管理</div>
-                
+
                 <!-- Generator -->
-                <div style="display: flex; gap: 16px; align-items: start; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+                <div
+                    style="display: flex; gap: 16px; align-items: start; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
                     <div>
                         <button onclick="generateRedemptionCodes()"
                             style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
@@ -354,8 +355,8 @@
                         <p style="color:#999; font-size:12px; margin-top:8px;">生成的兑换码将自动刷新到下方列表中</p>
                     </div>
                     <div style="flex: 1; display:none;">
-                         <textarea id="redemption-codes-output"></textarea>
-                         <button id="copy-codes-btn"></button>
+                        <textarea id="redemption-codes-output"></textarea>
+                        <button id="copy-codes-btn"></button>
                     </div>
                 </div>
 
@@ -381,9 +382,10 @@
     </div>
 
     <!-- ... (QR Modal) ... -->
-    <div id="qr-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-             <!-- ... existing modal content ... -->
-             <!-- Copied from original file manually if needed, or better, just leave the end of the file alone in the tool -->
+    <div id="qr-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <!-- ... existing modal content ... -->
+        <!-- Copied from original file manually if needed, or better, just leave the end of the file alone in the tool -->
     </div>
     <!-- Closing div for qr-modal is handled by context, but let's be safe and match lines -->
 
@@ -393,31 +395,31 @@
         // ... existing loadStats ...
 
         async function loadRedemptionCodes() {
-             const list = document.getElementById('redemption-list');
-             list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">加载中...</td></tr>';
-             
-             try {
+            const list = document.getElementById('redemption-list');
+            list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">加载中...</td></tr>';
+
+            try {
                 const response = await fetch(`${API_BASE}/api/admin/redemption/list?limit=100`);
                 const data = await response.json();
-                
+
                 if (data.error) throw new Error(data.error);
-                
+
                 if (!data.codes || data.codes.length === 0) {
-                     list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#999;">暂无兑换码</td></tr>';
-                     return;
+                    list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#999;">暂无兑换码</td></tr>';
+                    return;
                 }
-                
+
                 list.innerHTML = '';
                 data.codes.forEach(item => {
-                    const statusBadge = item.status === 'used' 
+                    const statusBadge = item.status === 'used'
                         ? '<span style="background:#6c757d; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">已使用</span>'
                         : '<span style="background:#28a745; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">未使用</span>';
-                    
+
                     const copyBtn = `<button onclick="copyText('${item.code}')" style="border:1px solid #ddd; background:white; cursor:pointer; padding:2px 6px; border-radius:4px; font-size:11px;">复制</button>`;
-                    
+
                     const usedAt = item.used_at ? new Date(item.used_at).toLocaleString('zh-CN') : '-';
                     const usedBy = item.used_by || '-';
-                    
+
                     list.innerHTML += `
                         <tr style="border-bottom:1px solid #eee;">
                             <td style="padding:10px; font-family:monospace; font-weight:bold; color:#333;">${item.code}</td>
@@ -429,15 +431,15 @@
                         </tr>
                     `;
                 });
-             } catch (err) {
-                 list.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:red;">加载失败: ${err.message}</td></tr>`;
-             }
+            } catch (err) {
+                list.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:red;">加载失败: ${err.message}</td></tr>`;
+            }
         }
-        
+
         async function generateRedemptionCodes() {
             try {
-                if(!confirm('确定要生成 10 个新的兑换码吗？')) return;
-                
+                if (!confirm('确定要生成 10 个新的兑换码吗？')) return;
+
                 const response = await fetch(`${API_BASE}/api/admin/redemption/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -446,40 +448,29 @@
                 const data = await response.json();
 
                 if (data.error) throw new Error(data.error);
-                
+
                 alert(`成功生成 ${data.codes.length} 个兑换码`);
                 loadRedemptionCodes(); // Refresh list
-                
+
             } catch (error) {
                 alert('生成失败: ' + error.message);
             }
         }
 
         // ... (copyRedemptionCodes function removed or repurposed) ...
-        
+
         // Helper
         function copyText(text) {
-             navigator.clipboard.writeText(text).then(() => {
-                 // Minimal feedback, maybe a toast? For admin, alert is fine or nothing.
-                 // console.log('Copied');
-                 const el = event.target;
-                 const original = el.innerText;
-                 el.innerText = '已复制';
-                 setTimeout(() => el.innerText = original, 1000);
-             });
+            navigator.clipboard.writeText(text).then(() => {
+                // Minimal feedback, maybe a toast? For admin, alert is fine or nothing.
+                // console.log('Copied');
+                const el = event.target;
+                const original = el.innerText;
+                el.innerText = '已复制';
+                setTimeout(() => el.innerText = original, 1000);
+            });
         }
-        <div
-            style="background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 400px; width: 90%;">
-            <h3 style="margin-bottom: 20px; color: #333;">推广二维码</h3>
-            <div id="qrcode-container" style="background: white; padding: 10px; display: inline-block;"></div>
-            <p id="qr-link" style="margin: 20px 0; color: #666; font-size: 12px; word-break: break-all;"></p>
-            <p style="color: #999; font-size: 12px; margin-bottom: 20px;">提示：右键点击图片可保存</p>
-            <button onclick="closeQrModal()"
-                style="background: #666; color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer;">关闭</button>
-        </div>
-    </div>
 
-    <script>
         // 固定连接线上环境，显示真实数据
         const API_BASE = 'https://www.aiguess.cn';
 

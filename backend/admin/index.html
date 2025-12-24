@@ -279,7 +279,7 @@
                             <th>头像</th>
                             <th>昵称</th>
                             <th>OpenID</th>
-                            <th>是否付费</th>
+                            <th>VIP状态</th>
                             <th>设备</th>
                             <th>登录方式</th>
                             <th>注册时间</th>
@@ -587,9 +587,13 @@
 
                 userList.innerHTML = '';
                 data.users.forEach(user => {
-                    const paidBadge = user.isVip
-                        ? '<span style="background:#28a745; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">已付费</span>'
-                        : '<span style="background:#6c757d; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">未付费</span>';
+                    let paidBadge = '<span style="background:#6c757d; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">未付费</span>';
+
+                    if (user.vipSource === 'redemption') {
+                        paidBadge = `<span style="background:#17a2b8; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;" title="码: ${user.redemptionCode}">兑换码</span>`;
+                    } else if (user.vipSource === 'wechat' || user.isVip) {
+                        paidBadge = '<span style="background:#28a745; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px;">已付费</span>';
+                    }
                     const loginMethod = user.hasWechat
                         ? '<span style="color:#28a745;">微信</span>'
                         : (user.phone ? '<span style="color:#17a2b8;">手机</span>' : '<span style="color:#999;">未知</span>');

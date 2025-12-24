@@ -839,10 +839,14 @@ app.get('/api/admin/kol-stats', async (req, res) => {
                 u.nickname,
                 u.avatar_url,
                 COUNT(DISTINCT invited.openid) as registered_count,
-                COUNT(DISTINCT CASE WHEN invited.is_vip = 1 THEN invited.openid END) as paid_count
+                COUNT(DISTINCT CASE 
+                    WHEN invited.is_vip = 1 AND r_check.code IS NULL 
+                    THEN invited.openid 
+                END) as paid_count
             FROM referral_codes rc
             LEFT JOIN users u ON rc.receiver_openid = u.openid
             LEFT JOIN users invited ON invited.referrer_code = rc.code
+            LEFT JOIN redemption_codes r_check ON r_check.used_by = invited.openid
             WHERE rc.receiver_openid IS NOT NULL AND rc.is_active = true
             GROUP BY rc.code, rc.owner_name, rc.receiver_openid, rc.created_at, u.nickname, u.avatar_url
             ORDER BY paid_count DESC, registered_count DESC, rc.created_at DESC
@@ -1452,10 +1456,11 @@ app.delete('/api/admin/users/:id', async (req, res) => {
 app.get('/api/admin/users', async (req, res) => {
     try {
         const result = await db.query(`
-            SELECT id, openid, nickname, avatar_url, is_vip, vip_expire_time, 
-                   phone, phone_verified, wechat_bound, device_type, created_at 
-            FROM users 
-            ORDER BY created_at DESC
+            SELECT u.id, u.openid, u.nickname, u.avatar_url, u.is_vip, u.vip_expire_time, 
+                   u.phone, u.phone_verified, u.wechat_bound, u.device_type, u.created_at,
+                   (SELECT code FROM redemption_codes WHERE used_by = u.openid LIMIT 1) as redemption_code
+            FROM users u
+            ORDER BY u.created_at DESC
         `);
         res.json({
             total: result.rows.length,
@@ -1465,6 +1470,8 @@ app.get('/api/admin/users', async (req, res) => {
                 nickname: u.nickname || '未设置昵称',
                 avatar: u.avatar_url,
                 isVip: u.is_vip === 1,
+                vipSource: u.redemption_code ? 'redemption' : (u.is_vip === 1 ? 'wechat' : 'none'),
+                redemptionCode: u.redemption_code,
                 vipExpire: u.vip_expire_time,
                 phone: u.phone,
                 hasWechat: !!u.openid,

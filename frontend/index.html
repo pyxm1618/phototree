@@ -1243,7 +1243,7 @@
                 return;
             }
 
-            if (!currentUser || !currentUser.openid) {
+            if (!window.currentUser || !window.currentUser.openid) {
                 alert('请先登录后再进行兑换');
                 return;
             }
@@ -1257,7 +1257,7 @@
                 const response = await fetch('/api/redemption/redeem', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: code, openid: currentUser.openid })
+                    body: JSON.stringify({ code: code, openid: window.currentUser.openid })
                 });
 
                 // Check HTTP status
@@ -2086,6 +2086,7 @@
 
         function handleLoginSuccess(user) {
             currentUser = user;
+            window.currentUser = user; // Expose to global scope for non-module scripts
             // Persist login state
             localStorage.setItem('userInfo', JSON.stringify(user));
 

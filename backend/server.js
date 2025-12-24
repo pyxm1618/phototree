@@ -984,8 +984,8 @@ app.post('/api/redemption/redeem', async (req, res) => {
         vipExpireAt.setFullYear(vipExpireAt.getFullYear() + 1); // 一年有效期
 
         await db.query(
-            `UPDATE users SET is_vip = 1, vip_expire_at = $1 WHERE openid = $2`,
-            [vipExpireAt.toISOString(), openid]
+            `UPDATE users SET is_vip = 1, vip_expire_time = $1 WHERE openid = $2`,
+            [vipExpireAt.getTime(), openid]
         );
 
         // 3. 标记兑换码已使用

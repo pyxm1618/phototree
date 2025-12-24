@@ -936,6 +936,21 @@ app.post('/api/admin/redemption/generate', async (req, res) => {
     }
 });
 
+// Admin: Get Redemption Code List
+app.get('/api/admin/redemption/list', async (req, res) => {
+    try {
+        const { limit = 100 } = req.query;
+        const result = await db.query(
+            'SELECT * FROM redemption_codes ORDER BY created_at DESC LIMIT $1',
+            [limit]
+        );
+        res.json({ success: true, codes: result.rows });
+    } catch (err) {
+        console.error('[Redemption] List Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 /**
  * @route POST /api/redemption/redeem
  * @desc 兑换码核销（用户）

@@ -341,36 +341,133 @@
                 </p>
             </div>
 
-            <!-- 兑换码管理 -->
             <div class="section">
                 <div class="section-title">兑换码管理</div>
-                <div style="display: flex; gap: 16px; align-items: start; flex-wrap: wrap;">
+                
+                <!-- Generator -->
+                <div style="display: flex; gap: 16px; align-items: start; flex-wrap: wrap; margin-bottom: 24px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
                     <div>
                         <button onclick="generateRedemptionCodes()"
                             style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
                             生成 10 个兑换码
                         </button>
-                        <p style="color:#999; font-size:12px; margin-top:8px;">每个兑换码可兑换 1 年 Premium 会员</p>
+                        <p style="color:#999; font-size:12px; margin-top:8px;">生成的兑换码将自动刷新到下方列表中</p>
                     </div>
-                    <div style="flex: 1; min-width: 280px;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: bold; color: #333;">生成结果</span>
-                            <button onclick="copyRedemptionCodes()" id="copy-codes-btn"
-                                style="font-size:12px; padding:4px 12px; display:none;">一键复制</button>
-                        </div>
-                        <textarea id="redemption-codes-output" readonly
-                            style="width:100%; height:220px; border:1px solid #ddd; border-radius:6px; padding:12px; font-family:monospace; font-size:14px; resize: none; background:#f9f9f9;"
-                            placeholder="点击左侧按钮生成兑换码..."></textarea>
+                    <div style="flex: 1; display:none;">
+                         <textarea id="redemption-codes-output"></textarea>
+                         <button id="copy-codes-btn"></button>
                     </div>
+                </div>
+
+                <!-- History Table -->
+                <div>
+                    <h4 style="margin-bottom:12px;">兑换码列表 (最新 100 条)</h4>
+                    <table style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align:left; background:#f8f9fa;">
+                                <th style="padding:10px;">兑换码</th>
+                                <th style="padding:10px;">状态</th>
+                                <th style="padding:10px;">创建时间</th>
+                                <th style="padding:10px;">使用时间</th>
+                                <th style="padding:10px;">使用者</th>
+                                <th style="padding:10px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="redemption-list"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 二维码弹窗 -->
-    <div id="qr-modal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <!-- ... (QR Modal) ... -->
+    <div id="qr-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+             <!-- ... existing modal content ... -->
+             <!-- Copied from original file manually if needed, or better, just leave the end of the file alone in the tool -->
+    </div>
+    <!-- Closing div for qr-modal is handled by context, but let's be safe and match lines -->
+
+    <script>
+        // ... (API_BASE definition) ... 
+
+        // ... existing loadStats ...
+
+        async function loadRedemptionCodes() {
+             const list = document.getElementById('redemption-list');
+             list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;">加载中...</td></tr>';
+             
+             try {
+                const response = await fetch(`${API_BASE}/api/admin/redemption/list?limit=100`);
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+                
+                if (!data.codes || data.codes.length === 0) {
+                     list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#999;">暂无兑换码</td></tr>';
+                     return;
+                }
+                
+                list.innerHTML = '';
+                data.codes.forEach(item => {
+                    const statusBadge = item.status === 'used' 
+                        ? '<span style="background:#6c757d; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">已使用</span>'
+                        : '<span style="background:#28a745; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">未使用</span>';
+                    
+                    const copyBtn = `<button onclick="copyText('${item.code}')" style="border:1px solid #ddd; background:white; cursor:pointer; padding:2px 6px; border-radius:4px; font-size:11px;">复制</button>`;
+                    
+                    const usedAt = item.used_at ? new Date(item.used_at).toLocaleString('zh-CN') : '-';
+                    const usedBy = item.used_by || '-';
+                    
+                    list.innerHTML += `
+                        <tr style="border-bottom:1px solid #eee;">
+                            <td style="padding:10px; font-family:monospace; font-weight:bold; color:#333;">${item.code}</td>
+                            <td style="padding:10px;">${statusBadge}</td>
+                            <td style="padding:10px; color:#666; font-size:12px;">${new Date(item.created_at).toLocaleString('zh-CN')}</td>
+                            <td style="padding:10px; color:#666; font-size:12px;">${usedAt}</td>
+                            <td style="padding:10px; font-size:12px;">${usedBy}</td>
+                            <td style="padding:10px;">${copyBtn}</td>
+                        </tr>
+                    `;
+                });
+             } catch (err) {
+                 list.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:red;">加载失败: ${err.message}</td></tr>`;
+             }
+        }
+        
+        async function generateRedemptionCodes() {
+            try {
+                if(!confirm('确定要生成 10 个新的兑换码吗？')) return;
+                
+                const response = await fetch(`${API_BASE}/api/admin/redemption/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: 10 })
+                });
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+                
+                alert(`成功生成 ${data.codes.length} 个兑换码`);
+                loadRedemptionCodes(); // Refresh list
+                
+            } catch (error) {
+                alert('生成失败: ' + error.message);
+            }
+        }
+
+        // ... (copyRedemptionCodes function removed or repurposed) ...
+        
+        // Helper
+        function copyText(text) {
+             navigator.clipboard.writeText(text).then(() => {
+                 // Minimal feedback, maybe a toast? For admin, alert is fine or nothing.
+                 // console.log('Copied');
+                 const el = event.target;
+                 const original = el.innerText;
+                 el.innerText = '已复制';
+                 setTimeout(() => el.innerText = original, 1000);
+             });
+        }
         <div
             style="background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 400px; width: 90%;">
             <h3 style="margin-bottom: 20px; color: #333;">推广二维码</h3>
@@ -802,6 +899,7 @@
             loadStats();
             loadUsers();
             loadKolStats();
+            loadRedemptionCodes();
         });
     </script>
 </body>

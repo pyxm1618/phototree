@@ -1232,6 +1232,24 @@ app.get('/api/admin/profit-sharing/records', async (req, res) => {
 });
 
 /**
+ * @route GET /api/dev/check-user-referrer
+ * @desc [DEBUG] Check user referrer code assignment
+ */
+app.get('/api/dev/check-user-referrer', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT openid, nickname, referrer_code, is_vip, created_at
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT 20
+        `);
+        res.json({ success: true, users: result.rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * @route POST /api/dev/force-vip
  * @desc [EMERGENCY] Manually set VIP (Use after confirmed payment)
  */

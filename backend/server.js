@@ -493,6 +493,187 @@ app.post('/api/referral/create', async (req, res) => {
 });
 
 /**
+ * @route POST /api/referral/generate
+ * @desc 用户自助生成专属邀请码（自动绑定 OpenID 和微信分账）
+ */
+app.post('/api/referral/generate', async (req, res) => {
+    const { openid } = req.body;
+
+    if (!openid) {
+        return res.status(400).json({ error: '请先登录' });
+    }
+
+    try {
+        // 1. 检查用户是否已有邀请码
+        const existing = await db.query(
+            'SELECT * FROM referral_codes WHERE receiver_openid = $1 AND is_active = true',
+            [openid]
+        );
+
+        if (existing.rows.length > 0) {
+            // 已有邀请码，直接返回
+            const code = existing.rows[0].code;
+            return res.json({
+                success: true,
+                isNew: false,
+                code: code,
+                url: `https://www.aiguess.cn/?ref=${code}`,
+                message: '您已有专属邀请码'
+            });
+        }
+
+        // 2. 获取用户信息
+        const userResult = await db.query(
+            'SELECT nickname, avatar_url FROM users WHERE openid = $1',
+            [openid]
+        );
+        const nickname = userResult.rows[0]?.nickname || '推广用户';
+
+        // 3. 生成唯一邀请码（6位，排除易混淆字符）
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code;
+        let isUnique = false;
+        let attempts = 0;
+
+        while (!isUnique && attempts < 10) {
+            code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            // 检查是否重复
+            const checkResult = await db.query('SELECT code FROM referral_codes WHERE code = $1', [code]);
+            if (checkResult.rows.length === 0) {
+                isUnique = true;
+            }
+            attempts++;
+        }
+
+        if (!isUnique) {
+            return res.status(500).json({ error: '生成邀请码失败，请重试' });
+        }
+
+        // 4. 调用微信 API 添加分账接收方
+        const PAY_APP_ID = 'wx746a39363f67ae95';
+        const wechatUrl = '/v3/profitsharing/receivers/add';
+
+        const requestBody = {
+            appid: PAY_APP_ID,
+            type: 'PERSONAL_OPENID',
+            account: openid,
+            relation_type: 'PARTNER'
+        };
+
+        const bodyStr = JSON.stringify(requestBody);
+        const authHeader = buildAuthHeader('POST', wechatUrl, bodyStr);
+
+        console.log(`[Referral] Adding receiver to WeChat: ${openid}`);
+
+        try {
+            await axios.post(`https://api.mch.weixin.qq.com${wechatUrl}`, requestBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authHeader,
+                    'Accept': 'application/json'
+                }
+            });
+            console.log(`[Referral] ✅ Receiver added to WeChat: ${openid}`);
+        } catch (wechatErr) {
+            // 如果是"已存在"错误，忽略
+            if (!wechatErr.response?.data?.message?.includes('已存在')) {
+                console.error('[Referral] WeChat API error:', wechatErr.response?.data || wechatErr.message);
+                // 不阻断流程，继续保存
+            }
+        }
+
+        // 5. 保存到数据库
+        await db.query(
+            `INSERT INTO referral_codes (code, owner_name, receiver_openid, commission_rate, sharing_percentage, is_active) 
+             VALUES ($1, $2, $3, $4, $5, true)`,
+            [code, nickname, openid, 0.30, 30.00]
+        );
+
+        console.log(`[Referral] ✅ Generated code: ${code} for ${nickname} (${openid})`);
+
+        res.json({
+            success: true,
+            isNew: true,
+            code: code,
+            url: `https://www.aiguess.cn/?ref=${code}`,
+            message: '专属邀请码生成成功！'
+        });
+
+    } catch (err) {
+        console.error('[Referral] Generate Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route GET /api/referral/my-stats
+ * @desc 获取当前用户的推广统计数据
+ */
+app.get('/api/referral/my-stats', async (req, res) => {
+    const openid = req.query.openid;
+
+    if (!openid) {
+        return res.status(400).json({ error: '请先登录' });
+    }
+
+    try {
+        // 获取用户的邀请码
+        const codeResult = await db.query(
+            'SELECT * FROM referral_codes WHERE receiver_openid = $1 AND is_active = true',
+            [openid]
+        );
+
+        if (codeResult.rows.length === 0) {
+            return res.json({
+                success: true,
+                hasCode: false,
+                message: '您还没有生成邀请码'
+            });
+        }
+
+        const code = codeResult.rows[0].code;
+
+        // 获取统计数据
+        const registeredUsers = await db.query(
+            'SELECT COUNT(*) as count FROM users WHERE referrer_code = $1',
+            [code]
+        );
+
+        const paidUsers = await db.query(
+            'SELECT COUNT(*) as count FROM users WHERE referrer_code = $1 AND is_vip = 1',
+            [code]
+        );
+
+        // 获取分账记录
+        const sharingRecords = await db.query(
+            'SELECT SUM(amount) as total_amount FROM profit_sharing_records WHERE referrer_code = $1 AND status = $2',
+            [code, 'success']
+        );
+
+        const totalEarnings = parseInt(sharingRecords.rows[0]?.total_amount || 0) / 100; // 分转元
+
+        res.json({
+            success: true,
+            hasCode: true,
+            code: code,
+            url: `https://www.aiguess.cn/?ref=${code}`,
+            stats: {
+                registeredUsers: parseInt(registeredUsers.rows[0].count),
+                paidUsers: parseInt(paidUsers.rows[0].count),
+                totalEarnings: totalEarnings.toFixed(2)
+            }
+        });
+
+    } catch (err) {
+        console.error('[Referral] My Stats Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * @route GET /api/referral/stats/:code
  * @desc Get statistics for a specific referral code
  */
@@ -638,6 +819,75 @@ app.get('/api/admin/stats', async (req, res) => {
         });
     } catch (err) {
         console.error('[Admin] Stats Error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route GET /api/admin/kol-stats
+ * @desc 获取所有 KOL 统计（自助生成邀请码的用户）
+ */
+app.get('/api/admin/kol-stats', async (req, res) => {
+    try {
+        // 获取所有自助生成的邀请码（receiver_openid 不为空）
+        const kolResult = await db.query(`
+            SELECT 
+                rc.code,
+                rc.owner_name,
+                rc.receiver_openid,
+                rc.created_at,
+                u.nickname,
+                u.avatar_url,
+                COUNT(DISTINCT invited.openid) as registered_count,
+                COUNT(DISTINCT CASE WHEN invited.is_vip = 1 THEN invited.openid END) as paid_count
+            FROM referral_codes rc
+            LEFT JOIN users u ON rc.receiver_openid = u.openid
+            LEFT JOIN users invited ON invited.referrer_code = rc.code
+            WHERE rc.receiver_openid IS NOT NULL AND rc.is_active = true
+            GROUP BY rc.code, rc.owner_name, rc.receiver_openid, rc.created_at, u.nickname, u.avatar_url
+            ORDER BY paid_count DESC, registered_count DESC, rc.created_at DESC
+        `);
+
+        // 获取每个 KOL 的分账收益
+        const kolsWithEarnings = await Promise.all(kolResult.rows.map(async (kol) => {
+            const earningsResult = await db.query(
+                'SELECT COALESCE(SUM(amount), 0) as total FROM profit_sharing_records WHERE referrer_code = $1 AND status = $2',
+                [kol.code, 'success']
+            );
+            return {
+                ...kol,
+                totalEarnings: parseInt(earningsResult.rows[0].total) / 100 // 分转元
+            };
+        }));
+
+        // 汇总统计
+        const totalKols = kolResult.rows.length;
+        const totalRegistered = kolResult.rows.reduce((sum, k) => sum + parseInt(k.registered_count), 0);
+        const totalPaid = kolResult.rows.reduce((sum, k) => sum + parseInt(k.paid_count), 0);
+        const totalEarnings = kolsWithEarnings.reduce((sum, k) => sum + k.totalEarnings, 0);
+
+        res.json({
+            success: true,
+            summary: {
+                totalKols,
+                totalRegistered,
+                totalPaid,
+                totalEarnings: totalEarnings.toFixed(2)
+            },
+            kols: kolsWithEarnings.map(k => ({
+                code: k.code,
+                nickname: k.nickname || k.owner_name,
+                avatar: k.avatar_url,
+                openid: k.receiver_openid,
+                registeredCount: parseInt(k.registered_count),
+                paidCount: parseInt(k.paid_count),
+                totalEarnings: k.totalEarnings.toFixed(2),
+                createdAt: k.created_at
+            }))
+        });
+
+    } catch (err) {
+        console.error('[Admin] KOL Stats Error:', err);
         res.status(500).json({ error: err.message });
     }
 });

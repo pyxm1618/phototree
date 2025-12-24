@@ -290,53 +290,55 @@
                 </table>
             </div>
 
-            <!-- 邀请码排行 -->
+            <!-- KOL 推广统计 -->
             <div class="section">
-                <div class="section-title">邀请码排行榜 (Top 10)</div>
+                <div class="section-title">🎯 KOL 推广统计 <button onclick="loadKolStats()"
+                        style="font-size:12px; padding:4px 8px; margin-left:10px;">刷新</button></div>
+
+                <!-- KOL 汇总 -->
+                <div id="kol-summary" style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <div
+                        style="flex:1; min-width: 120px; background: rgba(102,126,234,0.1); padding: 16px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #667eea;" id="kol-count">0</div>
+                        <div style="font-size: 12px; color: #666;">KOL 总数</div>
+                    </div>
+                    <div
+                        style="flex:1; min-width: 120px; background: rgba(40,167,69,0.1); padding: 16px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #28a745;" id="kol-total-registered">0
+                        </div>
+                        <div style="font-size: 12px; color: #666;">推广注册</div>
+                    </div>
+                    <div
+                        style="flex:1; min-width: 120px; background: rgba(255,193,7,0.1); padding: 16px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #ffc107;" id="kol-total-paid">0</div>
+                        <div style="font-size: 12px; color: #666;">推广付费</div>
+                    </div>
+                    <div
+                        style="flex:1; min-width: 120px; background: rgba(220,53,69,0.1); padding: 16px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #dc3545;" id="kol-total-earnings">¥0</div>
+                        <div style="font-size: 12px; color: #666;">已分佣金</div>
+                    </div>
+                </div>
+
+                <!-- KOL 列表 -->
                 <table>
                     <thead>
                         <tr>
+                            <th>头像</th>
+                            <th>昵称</th>
                             <th>邀请码</th>
-                            <th>所属KOL</th>
-                            <th>联系方式</th>
                             <th>注册/付费</th>
-                            <th>转化率</th>
-                            <th>操作</th>
+                            <th>已分佣金</th>
+                            <th>加入时间</th>
                         </tr>
                     </thead>
-                    <tbody id="referral-stats"></tbody>
+                    <tbody id="kol-list"></tbody>
                 </table>
-            </div>
 
-            <!-- 创建新邀请码 -->
-            <div class="section">
-                <div class="section-title">创建新邀请码</div>
-                <div class="create-code-form">
-                    <input type="text" id="new-owner" placeholder="KOL名称 (如: 小红、张三)" required style="flex:2;">
-                    <input type="text" id="new-contact" placeholder="联系方式 (可选)">
-                    <button onclick="createReferralCode()">🎫 一键生成邀请码</button>
-                </div>
-                <p style="color:#999; font-size:12px; margin-top:8px;">
-                    * 邀请码自动生成，佣金比例默认30%（与微信商户平台一致）
+                <p style="color:#999; font-size:12px; margin-top:16px; text-align:center;">
+                    💡 用户访问 <a href="https://www.aiguess.cn/invite.html" target="_blank"
+                        style="color:#667eea;">www.aiguess.cn/invite.html</a> 可自助生成邀请链接
                 </p>
-            </div>
-
-            <!-- 分账接收方管理 ⭐ 新增 -->
-            <div class="section">
-                <div class="section-title">💰 分账接收方管理</div>
-                <p style="color:#666; font-size:14px; margin-bottom:16px;">
-                    ⚠️ 绑定前需先在<a href="https://pay.weixin.qq.com" target="_blank" style="color:#667eea">微信商户平台</a>添加该 KOL
-                    为分账接收方
-                </p>
-                <div class="create-code-form">
-                    <input type="text" id="receiver-code" placeholder="邀请码 (如: KOL_XIAOMING)" required>
-                    <input type="text" id="receiver-openid" placeholder="KOL的OpenID (如: oXXXX...)" required
-                        style="flex:2;">
-                    <input type="number" id="receiver-percentage" placeholder="分账比例 (%)" value="10" step="0.1" required>
-                    <button onclick="addReceiver()" style="background:#28a745">绑定OpenID</button>
-                </div>
-                <div id="receiver-message" style="margin-top:10px; padding:10px; border-radius:6px; display:none;">
-                </div>
             </div>
         </div>
     </div>
@@ -437,32 +439,7 @@
                     });
                 }
 
-                // 邀请码排行
-                const referralStats = document.getElementById('referral-stats');
-                referralStats.innerHTML = '';
-                if (data.topReferrals.length === 0) {
-                    referralStats.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">暂无邀请码数据</td></tr>';
-                } else {
-                    data.topReferrals.forEach(row => {
-                        const conversion = row.registered_users > 0
-                            ? ((row.paid_users / row.registered_users) * 100).toFixed(2) + '%'
-                            : '0%';
-                        referralStats.innerHTML += `
-                            <tr>
-                                <td><strong>${row.code}</strong></td>
-                                <td>${row.owner_name}</td>
-                                <td><small style="color:#666;">${row.owner_contact || '-'}</small></td>
-                                <td>${row.registered_users} / ${row.paid_users}</td>
-                                <td>${conversion}</td>
-                                <td>
-                                    <button onclick="showQrCode('${row.code}')" style="background:#28a745; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">
-                                        📷 二维码
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
+                // （邀请码排行已移除，使用 KOL 统计替代）
 
                 loading.style.display = 'none';
                 dashboard.style.display = 'block';
@@ -527,6 +504,48 @@
                 });
             } catch (error) {
                 userList.innerHTML = `<tr><td colspan="8" style="color:red;">${error.message}</td></tr>`;
+            }
+        }
+
+        // 加载 KOL 统计
+        async function loadKolStats() {
+            const kolList = document.getElementById('kol-list');
+            kolList.innerHTML = '<tr><td colspan="6" style="text-align:center;">加载中...</td></tr>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/kol-stats`);
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // 更新汇总数据
+                document.getElementById('kol-count').textContent = data.summary.totalKols;
+                document.getElementById('kol-total-registered').textContent = data.summary.totalRegistered;
+                document.getElementById('kol-total-paid').textContent = data.summary.totalPaid;
+                document.getElementById('kol-total-earnings').textContent = '¥' + data.summary.totalEarnings;
+
+                // 更新列表
+                if (data.kols.length === 0) {
+                    kolList.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#999;">暂无 KOL 数据<br><small>用户访问 /invite.html 生成邀请码后会显示在这里</small></td></tr>';
+                    return;
+                }
+
+                kolList.innerHTML = '';
+                data.kols.forEach(kol => {
+                    const createdAt = new Date(kol.createdAt).toLocaleDateString('zh-CN');
+                    kolList.innerHTML += `
+                        <tr>
+                            <td><img src="${kol.avatar || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
+                            <td><strong>${kol.nickname}</strong></td>
+                            <td><code style="background:#f8f9fa; padding:2px 6px; border-radius:4px;">${kol.code}</code></td>
+                            <td>${kol.registeredCount} / ${kol.paidCount}</td>
+                            <td style="color:#28a745; font-weight:600;">¥${kol.totalEarnings}</td>
+                            <td><small>${createdAt}</small></td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                kolList.innerHTML = `<tr><td colspan="6" style="color:red;">${error.message}</td></tr>`;
             }
         }
 
@@ -717,6 +736,7 @@
         window.addEventListener('load', () => {
             loadStats();
             loadUsers();
+            loadKolStats();
         });
     </script>
 </body>

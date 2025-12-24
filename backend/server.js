@@ -94,6 +94,108 @@ app.post('/api/login', async (req, res) => {
 });
 
 /**
+ * @route POST /api/miniprogram/auth
+ * @desc 小程序授权 - 获取KOL在小程序下的openid用于分账
+ */
+app.post('/api/miniprogram/auth', async (req, res) => {
+    const { code, websiteOpenid } = req.body;
+
+    if (!code) {
+        return res.status(400).json({ error: '缺少 code 参数' });
+    }
+
+    console.log(`[MiniProgram Auth] Received code, websiteOpenid: ${websiteOpenid}`);
+
+    try {
+        // 1. 使用小程序的 appid 和 secret 换取 openid
+        const MINI_APP_ID = 'wx746a39363f67ae95'; // 小树荫助手
+        const MINI_APP_SECRET = process.env.MINI_APP_SECRET; // 需要在环境变量中配置
+
+        if (!MINI_APP_SECRET) {
+            console.error('[MiniProgram Auth] MINI_APP_SECRET not configured');
+            return res.status(500).json({ error: '小程序配置错误' });
+        }
+
+        const url = `https://api.weixin.qq.com/sns/jscode2session?appid=${MINI_APP_ID}&secret=${MINI_APP_SECRET}&js_code=${code}&grant_type=authorization_code`;
+
+        const response = await axios.get(url);
+        const data = response.data;
+
+        if (data.errcode) {
+            console.error('[MiniProgram Auth] WeChat API Error:', data);
+            return res.status(400).json({ error: data.errmsg || '微信接口错误' });
+        }
+
+        const miniOpenid = data.openid;
+        const unionid = data.unionid; // 如果已绑定开放平台，会返回unionid
+
+        console.log(`[MiniProgram Auth] Got miniOpenid: ${miniOpenid}, unionid: ${unionid}`);
+
+        // 2. 更新 referral_codes 表，将 receiver_openid 更新为小程序的 openid
+        if (websiteOpenid) {
+            // 查找该网站用户创建的邀请码，更新 receiver_openid 为小程序的 openid
+            const updateResult = await db.query(
+                `UPDATE referral_codes 
+                 SET receiver_openid = $1 
+                 WHERE receiver_openid = $2`,
+                [miniOpenid, websiteOpenid]
+            );
+
+            console.log(`[MiniProgram Auth] Updated ${updateResult.rowCount} referral codes from ${websiteOpenid} to ${miniOpenid}`);
+
+            // 也更新用户表，添加 mini_openid 字段
+            await db.query(
+                `UPDATE users 
+                 SET mini_openid = $1, unionid = $2 
+                 WHERE openid = $3`,
+                [miniOpenid, unionid, websiteOpenid]
+            );
+
+            // 3. 调用微信API添加分账接收方（用小程序的openid）
+            try {
+                const PAY_APP_ID = 'wx746a39363f67ae95';
+                const wechatUrl = '/v3/profitsharing/receivers/add';
+
+                const requestBody = {
+                    appid: PAY_APP_ID,
+                    type: 'PERSONAL_OPENID',
+                    account: miniOpenid,
+                    relation_type: 'PARTNER'
+                };
+
+                const bodyStr = JSON.stringify(requestBody);
+                const authHeader = buildAuthHeader('POST', wechatUrl, bodyStr);
+
+                await axios.post(`https://api.mch.weixin.qq.com${wechatUrl}`, requestBody, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': authHeader,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log(`[MiniProgram Auth] ✅ Added receiver to WeChat: ${miniOpenid}`);
+            } catch (wechatErr) {
+                // 如果是"已存在"错误，忽略
+                if (!wechatErr.response?.data?.message?.includes('已存在')) {
+                    console.error('[MiniProgram Auth] WeChat receiver add error:', wechatErr.response?.data || wechatErr.message);
+                }
+            }
+        }
+
+        res.json({
+            success: true,
+            message: '授权成功',
+            openid: miniOpenid
+        });
+
+    } catch (error) {
+        console.error('[MiniProgram Auth] Error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * @route GET /api/callback/wechat
  * @desc Handle WeChat OAuth2 Callback (Website Application)
  */

@@ -1,0 +1,12 @@
+{
+    "pages": [
+        "pages/auth/auth"
+    ],
+    "window": {
+        "backgroundTextStyle": "light",
+        "navigationBarBackgroundColor": "#1a1a2e",
+        "navigationBarTitleText": "分享者授权",
+        "navigationBarTextStyle": "white"
+    },
+    "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,34 @@
+<!--pages/auth/auth.wxml-->
+<view class="container">
+  <!-- Logo -->
+  <view class="logo-area">
+    <image class="logo" src="/images/logo.png" mode="aspectFit"></image>
+    <text class="app-name">小树荫助手</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="status-card" wx:if="{{status === 'loading'}}">
+    <view class="loading-spinner"></view>
+    <text class="status-text">{{message}}</text>
+  </view>
+
+  <!-- 成功 -->
+  <view class="status-card success" wx:if="{{status === 'success'}}">
+    <view class="icon-success">✓</view>
+    <text class="status-text">{{message}}</text>
+    <text class="hint-text">您现在可以关闭此页面</text>
+  </view>
+
+  <!-- 失败 -->
+  <view class="status-card error" wx:if="{{status === 'error'}}">
+    <view class="icon-error">✕</view>
+    <text class="status-text">{{message}}</text>
+    <text class="error-detail" wx:if="{{errorDetail}}">{{errorDetail}}</text>
+    <button class="retry-btn" bindtap="onRetry">重试</button>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="footer">
+    <text class="footer-text">分享者专属授权</text>
+  </view>
+</view>

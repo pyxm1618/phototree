@@ -954,6 +954,38 @@ app.get('/api/dev/init-db', async (req, res) => {
 });
 
 /**
+ * @route GET /api/dev/query-users
+ * @desc 查询所有用户数据（调试用）
+ */
+app.get('/api/dev/query-users', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM users ORDER BY id');
+        res.json({
+            total: result.rows.length,
+            users: result.rows
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * @route DELETE /api/dev/clear-test-data
+ * @desc 清除测试数据（危险操作）
+ */
+app.delete('/api/dev/clear-test-data', async (req, res) => {
+    try {
+        await db.query('DELETE FROM users');
+        await db.query('DELETE FROM page_views');
+        await db.query('DELETE FROM referral_codes');
+        await db.query('DELETE FROM profit_sharing_records');
+        res.json({ success: true, message: '所有测试数据已清除' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * @route GET /api/dev/fix-db
  * @desc 修复数据库字段（强制添加缺失的列）
  */

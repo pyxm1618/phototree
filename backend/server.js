@@ -599,12 +599,13 @@ app.get('/api/admin/stats', async (req, res) => {
                 SELECT 
                     rc.code,
                     rc.owner_name,
+                    rc.owner_contact,
                     COUNT(DISTINCT u.openid) as registered_users,
                     COUNT(DISTINCT CASE WHEN u.is_vip = 1 THEN u.openid END) as paid_users
                 FROM referral_codes rc
                 LEFT JOIN users u ON u.referrer_code = rc.code
                 WHERE rc.is_active = true
-                GROUP BY rc.code, rc.owner_name
+                GROUP BY rc.code, rc.owner_name, rc.owner_contact
                 ORDER BY paid_users DESC, registered_users DESC
                 LIMIT 10
             `);

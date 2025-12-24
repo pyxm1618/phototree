@@ -297,6 +297,7 @@
                         <tr>
                             <th>邀请码</th>
                             <th>所属KOL</th>
+                            <th>联系方式</th>
                             <th>注册/付费</th>
                             <th>转化率</th>
                             <th>操作</th>
@@ -439,7 +440,7 @@
                 const referralStats = document.getElementById('referral-stats');
                 referralStats.innerHTML = '';
                 if (data.topReferrals.length === 0) {
-                    referralStats.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">暂无邀请码数据</td></tr>';
+                    referralStats.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">暂无邀请码数据</td></tr>';
                 } else {
                     data.topReferrals.forEach(row => {
                         const conversion = row.registered_users > 0
@@ -449,6 +450,7 @@
                             <tr>
                                 <td><strong>${row.code}</strong></td>
                                 <td>${row.owner_name}</td>
+                                <td><small style="color:#666;">${row.owner_contact || '-'}</small></td>
                                 <td>${row.registered_users} / ${row.paid_users}</td>
                                 <td>${conversion}</td>
                                 <td>

@@ -971,13 +971,12 @@ app.get('/api/admin/kol-stats', async (req, res) => {
                 u.avatar_url,
                 COUNT(DISTINCT invited.openid) as registered_count,
                 COUNT(DISTINCT CASE 
-                    WHEN invited.is_vip = 1 AND r_check.code IS NULL 
+                    WHEN invited.is_vip = 1
                     THEN invited.openid 
                 END) as paid_count
             FROM referral_codes rc
             LEFT JOIN users u ON rc.receiver_openid = u.openid
             LEFT JOIN users invited ON invited.referrer_code = rc.code
-            LEFT JOIN redemption_codes r_check ON r_check.used_by = invited.openid
             WHERE rc.receiver_openid IS NOT NULL AND rc.is_active = true
             GROUP BY rc.code, rc.owner_name, rc.receiver_openid, rc.created_at, u.nickname, u.avatar_url
             ORDER BY paid_count DESC, registered_count DESC, rc.created_at DESC

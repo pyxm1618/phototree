@@ -451,6 +451,17 @@ app.post('/api/track/pv', async (req, res) => {
     const { sessionId, referrerCode, deviceType, userAgent } = req.body;
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
+    // Filter out bots (Vercel Screenshot, Crawlers)
+    if (userAgent && (
+        userAgent.includes('vercel-screenshot') ||
+        userAgent.includes('bot') ||
+        userAgent.includes('spider') ||
+        userAgent.includes('crawler')
+    )) {
+        // Silently ignore bots
+        return res.json({ success: true, ignored: true });
+    }
+
     try {
         await db.query(
             `INSERT INTO page_views (session_id, referrer_code, device_type, user_agent, ip_address) 
@@ -735,10 +746,18 @@ app.get('/api/referral/stats/:code', async (req, res) => {
 app.get('/api/admin/stats', async (req, res) => {
     try {
         // Total UV (unique session_id)
-        const uvResult = await db.query('SELECT COUNT(DISTINCT session_id) as count FROM page_views');
+        const uvResult = await db.query(`
+            SELECT COUNT(DISTINCT session_id) as count 
+            FROM page_views 
+            WHERE user_agent NOT ILIKE '%vercel-screenshot%' AND user_agent NOT ILIKE '%bot%'
+        `);
 
         // Total PV
-        const pvResult = await db.query('SELECT COUNT(*) as count FROM page_views');
+        const pvResult = await db.query(`
+            SELECT COUNT(*) as count 
+            FROM page_views 
+            WHERE user_agent NOT ILIKE '%vercel-screenshot%' AND user_agent NOT ILIKE '%bot%'
+        `);
 
         // Total registered users
         const usersResult = await db.query('SELECT COUNT(*) as count FROM users');
@@ -756,6 +775,7 @@ app.get('/api/admin/stats', async (req, res) => {
         const deviceResult = await db.query(`
             SELECT device_type, COUNT(*) as count 
             FROM page_views 
+            WHERE user_agent NOT ILIKE '%vercel-screenshot%' AND user_agent NOT ILIKE '%bot%'
             GROUP BY device_type
         `);
 
@@ -767,6 +787,7 @@ app.get('/api/admin/stats', async (req, res) => {
                 COUNT(DISTINCT session_id) as uv
             FROM page_views
             WHERE created_at >= NOW() - INTERVAL '24 hours'
+            AND user_agent NOT ILIKE '%vercel-screenshot%' AND user_agent NOT ILIKE '%bot%'
             GROUP BY DATE_TRUNC('hour', created_at)
             ORDER BY hour DESC
         `);
@@ -778,6 +799,7 @@ app.get('/api/admin/stats', async (req, res) => {
                 COUNT(DISTINCT session_id) as total_uv,
                 MIN(created_at) as first_visit
             FROM page_views
+            WHERE user_agent NOT ILIKE '%vercel-screenshot%' AND user_agent NOT ILIKE '%bot%'
         `);
 
         // Top referral codes (容错：如果 referrer_code 字段不存在则返回空)

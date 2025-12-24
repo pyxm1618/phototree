@@ -742,7 +742,7 @@ async function executeProfitSharing(transactionId, outTradeNo, referrerCode, tot
 
 /**
  * @route POST /api/admin/profit-sharing/add-receiver
- * @desc 添加分账接收方（绑定 KOL OpenID）
+ * @desc 添加分账接收方（先调用微信API，再保存到数据库）
  */
 app.post('/api/admin/profit-sharing/add-receiver', async (req, res) => {
     const { referralCode, openid, sharingPercentage } = req.body;
@@ -752,17 +752,65 @@ app.post('/api/admin/profit-sharing/add-receiver', async (req, res) => {
     }
 
     try {
-        // 更新 referral_codes 表
+        // 1. 先调用微信 API 添加分账接收方
+        const PAY_APP_ID = 'wx746a39363f67ae95';
+        const url = '/v3/profitsharing/receivers/add';
+
+        const requestBody = {
+            appid: PAY_APP_ID,
+            type: 'PERSONAL_OPENID',
+            account: openid,
+            relation_type: 'PARTNER'  // 合作伙伴
+        };
+
+        const bodyStr = JSON.stringify(requestBody);
+        const authHeader = buildAuthHeader('POST', url, bodyStr);
+
+        console.log(`[ProfitSharing] Adding receiver to WeChat: ${openid}`);
+
+        const wechatResponse = await axios.post(`https://api.mch.weixin.qq.com${url}`, requestBody, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authHeader,
+                'Accept': 'application/json'
+            }
+        });
+
+        console.log(`[ProfitSharing] WeChat API response:`, wechatResponse.data);
+
+        // 2. 微信 API 成功后，保存到数据库
         await db.query(
             'UPDATE referral_codes SET receiver_openid = $1, sharing_percentage = $2 WHERE code = $3',
             [openid, sharingPercentage || 10.00, referralCode]
         );
 
-        console.log(`[ProfitSharing] Receiver added: ${referralCode} -> ${openid}`);
-        res.json({ success: true, message: 'Receiver added successfully' });
+        console.log(`[ProfitSharing] ✅ Receiver added: ${referralCode} -> ${openid}`);
+        res.json({
+            success: true,
+            message: 'Receiver added to WeChat and saved',
+            wechatResponse: wechatResponse.data
+        });
     } catch (err) {
-        console.error('[ProfitSharing] Add receiver error:', err);
-        res.status(500).json({ error: err.message });
+        console.error('[ProfitSharing] Add receiver error:', err.response?.data || err.message);
+
+        // 如果微信 API 返回 "账户已存在"，也算成功
+        if (err.response?.data?.code === 'PARAM_ERROR' && err.response?.data?.message?.includes('已存在')) {
+            // 接收方已添加过，直接保存到数据库
+            await db.query(
+                'UPDATE referral_codes SET receiver_openid = $1, sharing_percentage = $2 WHERE code = $3',
+                [openid, sharingPercentage || 10.00, referralCode]
+            );
+
+            return res.json({
+                success: true,
+                message: '接收方已存在于微信分账列表，已保存到数据库'
+            });
+        }
+
+        res.status(500).json({
+            error: err.response?.data?.message || err.message,
+            details: err.response?.data
+        });
     }
 });
 

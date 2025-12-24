@@ -6,7 +6,8 @@ const path = require('path');
 const db = require('./db');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -1597,6 +1598,54 @@ app.get('/api/dev/check-pay-config', (req, res) => {
 
 // 引入短信服务（需要放在文件顶部，但为了减少改动，这里临时处理）
 const smsModule = require('./utils/sms');
+
+
+/**
+ * @route GET /api/dev/audit-traffic
+ * @desc [DEBUG] Analyze traffic sources to verify authenticity
+ */
+app.get('/api/dev/audit-traffic', async (req, res) => {
+    try {
+        const total = await db.query('SELECT COUNT(*) FROM page_views');
+
+        // Group by IP
+        const ipStats = await db.query(`
+            SELECT ip_address, COUNT(*) as count 
+            FROM page_views 
+            GROUP BY ip_address 
+            ORDER BY count DESC 
+            LIMIT 20
+        `);
+
+        // Group by User Agent
+        const uaStats = await db.query(`
+            SELECT user_agent, COUNT(*) as count 
+            FROM page_views 
+            GROUP BY user_agent 
+            ORDER BY count DESC 
+            LIMIT 20
+        `);
+
+        // Group by Day
+        const dailyStats = await db.query(`
+             SELECT DATE(created_at) as date, COUNT(*) as count
+             FROM page_views
+             GROUP BY DATE(created_at)
+             ORDER BY date DESC
+             LIMIT 10
+        `);
+
+        res.json({
+            total: total.rows[0].count,
+            topIPs: ipStats.rows,
+            topUAs: uaStats.rows,
+            daily: dailyStats.rows
+        });
+    } catch (err) {
+        console.error('[Audit] Error:', err);
+        res.status(500).json({ error: err.toString(), message: err.message || 'Unknown Error', stack: err.stack });
+    }
+});
 
 /**
  * @route POST /api/auth/send-code

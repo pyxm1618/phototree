@@ -743,7 +743,13 @@ app.get('/api/admin/stats', async (req, res) => {
         const usersResult = await db.query('SELECT COUNT(*) as count FROM users');
 
         // Total paid users
-        const paidResult = await db.query('SELECT COUNT(*) as count FROM users WHERE is_vip = 1');
+        // Total paid users (WeChat only, excluding redemption codes)
+        const paidResult = await db.query(`
+            SELECT COUNT(*) as count 
+            FROM users u 
+            WHERE is_vip = 1 
+            AND NOT EXISTS (SELECT 1 FROM redemption_codes r WHERE r.used_by = u.openid)
+        `);
 
         // Device distribution
         const deviceResult = await db.query(`

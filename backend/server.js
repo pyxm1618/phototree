@@ -251,7 +251,7 @@ app.post('/api/pay/create-order', async (req, res) => {
             // We use 'attach' field to pass custom data
             notify_url: `https://aiguess.cn/api/pay/notify`,
             amount: {
-                total: 1800, // 18 CNY (圣诞特惠价)
+                total: 100, // 1 CNY (测试价格)
                 currency: 'CNY'
             },
             attach: JSON.stringify({

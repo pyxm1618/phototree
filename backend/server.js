@@ -1408,6 +1408,23 @@ app.post('/api/dev/reset-vip', async (req, res) => {
 });
 
 /**
+ * @route POST /api/dev/set-referrer
+ * @desc [DEBUG] Set user's referrer_code for data recovery
+ */
+app.post('/api/dev/set-referrer', async (req, res) => {
+    const { openid, referrer_code } = req.body;
+    if (!openid || !referrer_code) {
+        return res.status(400).json({ error: 'Missing openid or referrer_code' });
+    }
+    try {
+        await db.query("UPDATE users SET referrer_code = $1 WHERE openid = $2", [referrer_code, openid]);
+        res.json({ success: true, message: `User referrer_code set to ${referrer_code}` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
  * @route GET /api/user/:openid
  * @desc Get latest user status
  */

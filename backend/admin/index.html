@@ -278,6 +278,7 @@
                         <tr>
                             <th>头像</th>
                             <th>昵称</th>
+                            <th>OpenID</th>
                             <th>是否付费</th>
                             <th>设备</th>
                             <th>登录方式</th>
@@ -508,6 +509,9 @@
                         <tr>
                             <td><img src="${user.avatar || 'https://via.placeholder.com/40'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;"></td>
                             <td><strong>${user.nickname}</strong>${user.phone ? '<br><small style="color:#666;">' + user.phone + '</small>' : ''}</td>
+                            <td>
+                                ${user.openid ? `<button onclick="copyText('${user.openid}')" style="background:#17a2b8; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:10px;">📋 复制</button><br><small style="color:#666; font-size:9px;">${user.openid.substring(0, 10)}...</small>` : '<span style="color:#999;">-</span>'}
+                            </td>
                             <td>${paidBadge}</td>
                             <td>${user.deviceType || '未知'}</td>
                             <td>${loginMethod}</td>
@@ -522,7 +526,7 @@
                     `;
                 });
             } catch (error) {
-                userList.innerHTML = `<tr><td colspan="7" style="color:red;">${error.message}</td></tr>`;
+                userList.innerHTML = `<tr><td colspan="8" style="color:red;">${error.message}</td></tr>`;
             }
         }
 
@@ -671,6 +675,15 @@
                 showMessage('❌ 请求失败: ' + error.message, 'error');
                 console.error('绑定接收方失败:', error);
             }
+        }
+
+        // 复制文本到剪贴板
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ OpenID 已复制到剪贴板！\n\n' + text);
+            }).catch(err => {
+                prompt('请手动复制：', text);
+            });
         }
 
         function showMessage(text, type) {

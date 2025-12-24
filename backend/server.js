@@ -1033,6 +1033,7 @@ app.get('/api/admin/users', async (req, res) => {
             total: result.rows.length,
             users: result.rows.map(u => ({
                 id: u.id,
+                openid: u.openid || null,
                 nickname: u.nickname || '未设置昵称',
                 avatar: u.avatar_url,
                 isVip: u.is_vip === 1,

@@ -1399,7 +1399,7 @@ app.post('/api/dev/reset-vip', async (req, res) => {
     console.log(`[Debug] Resetting VIP for ${openid}`);
 
     try {
-        await db.query("UPDATE users SET is_vip = 0, vip_expire_time = 0, referrer_code = NULL WHERE openid = $1", [openid]);
+        await db.query("UPDATE users SET is_vip = 0, vip_expire_time = 0 WHERE openid = $1", [openid]);
         console.log(`[Debug] ✅ User ${openid} VIP reset`);
         res.json({ success: true, message: "User VIP status reset" });
     } catch (err) {

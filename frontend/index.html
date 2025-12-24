@@ -1636,6 +1636,31 @@
         async function init() {
             // SaaS Initialization
             await Storage.init();
+
+            // Try to restore session
+            try {
+                const savedUser = localStorage.getItem('userInfo');
+                if (savedUser) {
+                    const user = JSON.parse(savedUser);
+                    console.log("Restoring session for user:", user.nickname);
+                    handleLoginSuccess(user);
+
+                    // Re-validate in background (e.g. check if VIP expired)
+                    API.getUser(user.openid).then(res => {
+                        if (res.success) {
+                            // Update local state with latest from server
+                            handleLoginSuccess(res.user);
+                        } else {
+                            console.warn("Session invalid, clearing");
+                            handleLogout();
+                        }
+                    }).catch(e => console.warn("Session check failed", e));
+                }
+            } catch (e) {
+                console.warn("Failed to restore session:", e);
+                localStorage.removeItem('userInfo');
+            }
+
             await setupAuthUI();
 
             initThree();

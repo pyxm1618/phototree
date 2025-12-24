@@ -932,6 +932,61 @@ app.get('/api/dev/init-db', async (req, res) => {
 });
 
 /**
+ * @route GET /api/dev/fix-db
+ * @desc 修复数据库字段（强制添加缺失的列）
+ */
+app.get('/api/dev/fix-db', async (req, res) => {
+    const results = [];
+
+    try {
+        // 1. 检查 users 表结构
+        const usersCols = await db.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users'
+        `);
+        results.push(`Current users columns: ${usersCols.rows.map(r => r.column_name).join(', ')}`);
+
+        // 2. 尝试添加分销系统字段（不使用 IF NOT EXISTS，显式处理错误）
+        const fieldsToAdd = [
+            { name: 'referrer_code', type: 'TEXT' },
+            { name: 'own_referral_code', type: 'TEXT' },
+            { name: 'device_type', type: 'TEXT' },
+            { name: 'phone', type: 'TEXT' },
+            { name: 'phone_verified', type: 'BOOLEAN DEFAULT false' },
+            { name: 'wechat_bound', type: 'BOOLEAN DEFAULT false' }
+        ];
+
+        for (const field of fieldsToAdd) {
+            try {
+                await db.query(`ALTER TABLE users ADD COLUMN ${field.name} ${field.type}`);
+                results.push(`✅ Added ${field.name}`);
+            } catch (err) {
+                if (err.message.includes('already exists')) {
+                    results.push(`⚠️  ${field.name} already exists`);
+                } else {
+                    results.push(`❌ Failed to add ${field.name}: ${err.message}`);
+                }
+            }
+        }
+
+        // 3. 再次检查表结构
+        const updatedCols = await db.query(`
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'users'
+            ORDER BY ordinal_position
+        `);
+        results.push(`\nFinal users columns: ${updatedCols.rows.map(r => r.column_name).join(', ')}`);
+
+        res.send(results.join('\n'));
+    } catch (err) {
+        console.error("[DB] Fix Error:", err);
+        res.status(500).send("Fix failed: " + err.message + "\n\nResults so far:\n" + results.join('\n'));
+    }
+});
+
+/**
  * @route GET /api/dev/check-pay-config
  * @desc Validate WeChat Pay Credentials & Crypto
  */

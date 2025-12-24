@@ -1232,18 +1232,26 @@
         }
 
         async function handleRedemption() {
+            console.log("handleRedemption called");
             const codeInput = document.getElementById('redemption-code');
             const code = codeInput.value.trim();
+            const btn = document.querySelector('#redemption-modal button:last-child');
+            const originalText = btn.innerText;
 
             if (!code) {
-                showToast('请输入兑换码', 'error');
+                alert('请输入兑换码');
                 return;
             }
 
             if (!currentUser || !currentUser.openid) {
-                showToast('请先登录', 'error');
+                alert('请先登录后再进行兑换');
                 return;
             }
+
+            // Set Loading
+            btn.innerText = '验证中...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
 
             try {
                 const response = await fetch('/api/redemption/redeem', {
@@ -1251,27 +1259,47 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code: code, openid: currentUser.openid })
                 });
+
+                // Check HTTP status
+                if (!response.ok) {
+                    throw new Error(`HTTP Error ${response.status}`);
+                }
+
                 const data = await response.json();
+                console.log("Redeem Response:", data);
 
                 if (data.success) {
-                    showToast(data.message || '兑换成功！', 'success');
+                    alert(data.message || '🎉 兑换成功！您已解锁 Premium 会员权益');
                     document.getElementById('redemption-modal').style.display = 'none';
 
-                    // Update UI to show VIP status
+                    // Update UI immediately
                     currentUser.is_vip = 1;
                     localStorage.setItem('userInfo', JSON.stringify(currentUser));
 
                     const card = document.getElementById('user-card');
                     if (card) {
                         card.classList.add('vip-active');
+                        // Force refresh UI/controls if needed
                         const btnPay = document.getElementById('btn-pay');
                         if (btnPay) btnPay.style.display = 'none';
                     }
+
+                    // Reload page to reflect all VIP changes safely (simplest way to ensure all 3D/music states update)
+                    if (confirm("兑换成功！是否立即刷新页面以启用所有权益？")) {
+                        window.location.reload();
+                    }
+
                 } else {
-                    showToast(data.error || '兑换失败', 'error');
+                    alert('❌ 兑换失败: ' + (data.error || '无效的兑换码'));
                 }
             } catch (err) {
-                showToast('网络错误，请重试', 'error');
+                console.error("Redemption Error:", err);
+                alert('❌ 网络请求失败，请检查网络或稍后重试。\n' + err.message);
+            } finally {
+                // Reset Button
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
             }
         }
     </script>

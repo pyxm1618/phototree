@@ -583,20 +583,25 @@ app.get('/api/admin/stats', async (req, res) => {
             ORDER BY date DESC
         `);
 
-        // Top referral codes
-        const topReferrals = await db.query(`
-            SELECT 
-                rc.code,
-                rc.owner_name,
-                COUNT(DISTINCT u.openid) as registered_users,
-                COUNT(DISTINCT CASE WHEN u.is_vip = 1 THEN u.openid END) as paid_users
-            FROM referral_codes rc
-            LEFT JOIN users u ON u.referrer_code = rc.code
-            WHERE rc.is_active = true
-            GROUP BY rc.code, rc.owner_name
-            ORDER BY paid_users DESC, registered_users DESC
-            LIMIT 10
-        `);
+        // Top referral codes (容错：如果 referrer_code 字段不存在则返回空)
+        let topReferrals = { rows: [] };
+        try {
+            topReferrals = await db.query(`
+                SELECT 
+                    rc.code,
+                    rc.owner_name,
+                    COUNT(DISTINCT u.openid) as registered_users,
+                    COUNT(DISTINCT CASE WHEN u.is_vip = 1 THEN u.openid END) as paid_users
+                FROM referral_codes rc
+                LEFT JOIN users u ON u.referrer_code = rc.code
+                WHERE rc.is_active = true
+                GROUP BY rc.code, rc.owner_name
+                ORDER BY paid_users DESC, registered_users DESC
+                LIMIT 10
+            `);
+        } catch (e) {
+            console.log('[Admin] topReferrals query failed (referrer_code may not exist):', e.message);
+        }
 
         res.json({
             success: true,

@@ -1823,7 +1823,20 @@
 
                         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                         const deviceType = isMobile ? 'mobile' : 'pc';
-                        const redirectUrl = `https://aiguess.cn/api/callback/wechat?device=${deviceType}`;
+
+                        // 获取当前 URL 中的 ref 参数（邀请码），确保通过 OAuth 登录流程传递
+                        const currentParams = new URLSearchParams(window.location.search);
+                        const refCode = currentParams.get('ref') || localStorage.getItem('pendingRefCode') || '';
+
+                        // 如果有 ref 参数，先保存到 localStorage（防止登录流程丢失）
+                        if (currentParams.get('ref')) {
+                            localStorage.setItem('pendingRefCode', currentParams.get('ref'));
+                        }
+
+                        let redirectUrl = `https://aiguess.cn/api/callback/wechat?device=${deviceType}`;
+                        if (refCode) {
+                            redirectUrl += `&ref=${refCode}`;
+                        }
 
                         new WxLogin({
                             self_redirect: false,

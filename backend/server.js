@@ -888,26 +888,43 @@ app.get('/api/dev/init-db', async (req, res) => {
         await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_referrer ON profit_sharing_records(referrer_code);`);
         await db.query(`CREATE INDEX IF NOT EXISTS idx_ps_status ON profit_sharing_records(status);`);
 
-        // 6. 为已存在的 users 表添加分销系统字段
-        try {
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS referrer_code TEXT;`);
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS own_referral_code TEXT;`);
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS device_type TEXT;`);
-            console.log('[DB] Referral columns added to users table');
-        } catch (e) {
-            console.log('[DB] Referral columns may already exist:', e.message);
-        }
+        // 6. 查询 users 表现有的列
+        const existingCols = await db.query(`
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name = 'users'
+        `);
+        const colNames = existingCols.rows.map(r => r.column_name);
+        console.log('[DB] Existing users columns:', colNames.join(', '));
 
-        // 7. 为手机号登录添加字段
-        try {
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT UNIQUE;`);
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT false;`);
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS wechat_bound BOOLEAN DEFAULT false;`);
-            console.log('[DB] Phone columns added to users table');
-        } catch (e) {
-            console.log('[DB] Phone columns may already exist:', e.message);
+        // 7. 添加缺失的列（逐个添加，记录结果）
+        const columnsToAdd = [
+            { name: 'referrer_code', type: 'TEXT' },
+            { name: 'own_referral_code', type: 'TEXT' },
+            { name: 'device_type', type: 'TEXT' },
+            { name: 'phone', type: 'TEXT' },
+            { name: 'phone_verified', type: 'BOOLEAN DEFAULT false' },
+            { name: 'wechat_bound', type: 'BOOLEAN DEFAULT false' }
+        ];
+
+        const addResults = [];
+        for (const col of columnsToAdd) {
+            if (colNames.includes(col.name)) {
+                addResults.push(`${col.name}: already exists`);
+            } else {
+                try {
+                    await db.query(`ALTER TABLE users ADD COLUMN ${col.name} ${col.type}`);
+                    addResults.push(`${col.name}: ADDED`);
+                } catch (e) {
+                    addResults.push(`${col.name}: ERROR - ${e.message}`);
+                }
+            }
         }
-        await db.query(`CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);`);
+        console.log('[DB] Column add results:', addResults.join(', '));
+
+        // 8. 创建索引
+        try {
+            await db.query(`CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone)`);
+        } catch (e) { /* ignore */ }
 
         // 8. 创建短信验证码表
         await db.query(`
